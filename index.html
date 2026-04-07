@@ -445,7 +445,83 @@
                 activeKeys[e.key] = false;
             }
         });
+// --- KEYBOARD CONTROL (WINDOWS / PC) ---
+let keyState = {
+    up: false,
+    down: false,
+    left: false,
+    right: false
+};
 
+function updateFromKeyboard() {
+    cX = 0;
+    cY = 0;
+
+    if (keyState.up) cY = 90;
+    if (keyState.down) cY = -90;
+    if (keyState.left) cX = -90;
+    if (keyState.right) cX = 90;
+
+    forceKineticUpdate();
+}
+
+window.addEventListener("keydown", (e) => {
+    switch (e.key.toLowerCase()) {
+        case "w":
+        case "arrowup":
+            keyState.up = true;
+            break;
+        case "s":
+        case "arrowdown":
+            keyState.down = true;
+            break;
+        case "a":
+        case "arrowleft":
+            keyState.left = true;
+            break;
+        case "d":
+        case "arrowright":
+            keyState.right = true;
+            break;
+
+        case "j":
+            send("A\n"); // Button A
+            break;
+        case "k":
+            send("B\n"); // Button B
+            break;
+    }
+    updateFromKeyboard();
+});
+
+window.addEventListener("keyup", (e) => {
+    switch (e.key.toLowerCase()) {
+        case "w":
+        case "arrowup":
+            keyState.up = false;
+            break;
+        case "s":
+        case "arrowdown":
+            keyState.down = false;
+            break;
+        case "a":
+        case "arrowleft":
+            keyState.left = false;
+            break;
+        case "d":
+        case "arrowright":
+            keyState.right = false;
+            break;
+
+        case "j":
+            send("a\n");
+            break;
+        case "k":
+            send("b\n");
+            break;
+    }
+    updateFromKeyboard();
+});
     </script>
 </body>
 </html>
