@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>MICROJOY (Red Edition)</title>
+    
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#050505">
+    <link rel="apple-touch-icon" href="icon.png">
+
+    <style>
+        :root {
+            --bg-color: #050505;
+            --panel-bg: #111;
+            --accent: #ff1a40;       /* Merah Utama */
+            --accent-dim: #4d0010;   /* Merah Gelap untuk garisan */
+            --danger: #ffbb00;       /* Kuning amaran supaya kontra dengan merah */
+            --text-main: #e0e0e0;
+        }
+
+        * { box-sizing: border-box; font-family: 'Courier New', Courier, monospace; user-select: none; -webkit-user-select: none; }
+
+        html, body {
+            margin: 0; padding: 0;
+            width: 100%; height: 100dvh;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            overflow: hidden;
+            touch-action: none;
+            display: flex; flex-direction: column;
+        }
+
+        /* --- HEADER --- */
+        .header {
+            padding: 12px 15px; background: var(--panel-bg);
+            border-bottom: 1px solid var(--accent-dim);
+            display: flex; justify-content: space-between; align-items: center;
+            z-index: 100;
+        }
+        
+        .brand-line { font-weight: bold; color: var(--accent); letter-spacing: 1px; font-size: 1rem; white-space: nowrap; }
+        .ver-tag { color: #ffffff; font-size: 0.6rem; opacity: 0.5; margin-left: 6px; }
+        
+        .status-container { display: flex; align-items: center; gap: 10px; }
+        #status { font-size: 0.7rem; color: var(--danger); text-transform: uppercase; font-weight: bold; transition: color 0.3s; }
+        #status.connected { color: var(--accent); }
+
+        .btn-connect {
+            background: rgba(255, 26, 64, 0.1); color: var(--accent);
+            border: 1px solid var(--accent); padding: 7px 12px;
+            font-size: 0.8rem; text-transform: uppercase; cursor: pointer;
+            clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
+            transition: background 0.2s, color 0.2s;
+        }
+        .btn-connect:active { background: var(--accent); color: #000; }
+
+        /* --- CONTROL GRID --- */
+        .control-grid {
+            flex: 1; display: flex; flex-direction: column;
+            justify-content: center; align-items: center; gap: 20px;
+            padding: 20px; padding-top: 8vh; padding-bottom: 5vh; 
+            position: relative;
+        }
+
+        .telemetry-hud {
+            background: #000; border: 1px solid var(--accent-dim);
+            padding: 8px 18px; border-radius: 20px;
+            font-size: 1.1rem; font-weight: bold; color: var(--accent);
+            text-align: center; box-shadow: 0 0 15px rgba(255, 26, 64, 0.1);
+            z-index: 10; transition: color 0.3s;
+        }
+        .telemetry-hud.offline { color: #444; border-color: #222; box-shadow: none; }
+
+        /* Left Thumb Zone */
+        .left-thumb-zone {
+            width: 100%; height: 300px; position: relative;
+            display: flex; justify-content: center; align-items: center; touch-action: none;
+        }
+
+        /* Mode 1: STATIC Joystick */
+        .joystick-hitbox { width: 100%; height: 100%; position: absolute; touch-action: none; display: flex; justify-content: center; align-items: center; }
+        .joystick-base {
+            width: 240px; height: 240px; background: rgba(20, 20, 20, 0.6); /* SAIZ DIBESARKAN */
+            border: 2px solid rgba(255, 26, 64, 0.2); border-radius: 50%;
+            position: relative;
+            transition: border-color 0.2s; backdrop-filter: blur(4px);
+        }
+        .joystick-base.active { border-color: rgba(255, 26, 64, 0.5); }
+        .joystick-base.max-throttle { border-color: var(--danger); box-shadow: 0 0 20px rgba(255, 187, 0, 0.3); }
+        .joystick-base::before, .joystick-base::after { content: ''; position: absolute; background: rgba(255, 26, 64, 0.2); }
+        .joystick-base::before { width: 1px; height: 100%; left: 50%; top: 0; }
+        .joystick-base::after { height: 1px; width: 100%; top: 50%; left: 0; box-shadow: 0 0 5px rgba(255, 26, 64, 0.5); }
+        
+        .thumbstick {
+            width: 85px; height: 85px; background: radial-gradient(circle, var(--accent) 0%, #8f001b 100%); /* SAIZ DIBESARKAN */
+            border-radius: 50%; position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -50%); pointer-events: none;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5), inset 0 -3px 5px rgba(0,0,0,0.3);
+        }
+        .joystick-base.max-throttle .thumbstick { background: radial-gradient(circle, var(--danger) 0%, #8f6200 100%); }
+
+        /* Mode 2: D-Pad */
+        .dpad-zone {
+            width: 240px; height: 240px; position: absolute; touch-action: none; /* SAIZ DIBESARKAN */
+            display: none; 
+        }
+        .dpad-btn {
+            position: absolute; width: 85px; height: 85px; border-radius: 12px; /* SAIZ DIBESARKAN */
+            background: rgba(30, 30, 30, 0.8); border: 2px solid rgba(255, 26, 64, 0.3);
+            color: var(--accent); font-size: 2.2rem; display: flex; justify-content: center; align-items: center;
+            box-shadow: 0 5px 10px rgba(0,0,0,0.5); transition: background 0.05s, transform 0.05s; touch-action: none;
+        }
+        .dpad-up { top: 0; left: 50%; transform: translateX(-50%); }
+        .dpad-down { bottom: 0; left: 50%; transform: translateX(-50%); }
+        .dpad-left { top: 50%; left: 0; transform: translateY(-50%); }
+        .dpad-right { top: 50%; right: 0; transform: translateY(-50%); }
+        
+        .dpad-btn.active-toggle { background: var(--accent); color: #000; border-color: #fff; box-shadow: 0 0 20px var(--accent); }
+        .dpad-up.active-toggle { transform: translateX(-50%) translateY(2px) scale(0.95); }
+        .dpad-down.active-toggle { transform: translateX(-50%) translateY(2px) scale(0.95); }
+        .dpad-left.active-toggle { transform: translateY(-50%) translateY(2px) scale(0.95); }
+        .dpad-right.active-toggle { transform: translateY(-50%) translateY(2px) scale(0.95); }
+
+        /* Right Thumb: Stacked Buttons */
+        .action-column { display: flex; flex-direction: column; gap: 20px; touch-action: none; z-index: 10; }
+        .btn-action {
+            width: 110px; height: 65px; border-radius: 15px;
+            background: rgba(30, 30, 30, 0.8); border: 2px solid rgba(255, 26, 64, 0.3);
+            color: var(--accent); font-size: 1.5rem; font-weight: bold;
+            display: flex; justify-content: center; align-items: center; touch-action: none;
+            box-shadow: 0 8px 15px rgba(0,0,0,0.5), inset 0 2px 5px rgba(255,255,255,0.1);
+            transition: transform 0.05s, box-shadow 0.05s, background 0.05s;
+        }
+        .btn-action.active-toggle { 
+            transform: scale(0.92) translateY(4px); background: var(--accent); color: #000;
+            box-shadow: 0 0 25px var(--accent), inset 0 5px 10px rgba(0,0,0,0.5); border-color: #fff;
+        }
+
+        /* Bottom Right Cluster */
+        .bottom-right-cluster {
+            position: fixed; bottom: 20px; right: 20px; display: flex; gap: 12px; z-index: 200;
+        }
+        .btn-icon {
+            background: rgba(255, 26, 64, 0.1); border: 1px solid var(--accent-dim);
+            color: var(--accent); font-size: 1.5rem; width: 50px; height: 50px; border-radius: 12px;
+            display: flex; justify-content: center; align-items: center; cursor: pointer;
+            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+            transition: all 0.2s;
+        }
+        .btn-icon:active { background: var(--accent); color: #000; transform: scale(0.9); }
+
+        /* --- LANDSCAPE OVERRIDES --- */
+        @media (orientation: landscape) {
+            .header { padding: 5px 15px; }
+            .control-grid { flex-direction: row; justify-content: space-between; align-items: center; padding: 10px 20px; padding-bottom: 0; }
+            .left-thumb-zone { width: 30vw; height: 100%; order: 1; }
+            .telemetry-hud { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 140px; font-size: 0.9rem; margin: 0; }
+            .action-column { order: 3; margin-right: 6vw; }
+            .bottom-right-cluster { bottom: 15px; right: 15px; }
+            .btn-icon { width: 45px; height: 45px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <div class="brand-line">MICROJOY BY ALIMIN <span class="ver-tag">v1.2.2</span></div>
+        <div class="status-container">
+            <span id="status">Offline</span>
+            <button class="btn-connect" id="btnConnect">Connect</button>
+        </div>
+    </div>
+
+    <div class="control-grid">
+        <div class="telemetry-hud offline" id="telemetryOut">AWAITING</div>
+        
+        <div class="left-thumb-zone">
+            <div class="joystick-hitbox" id="joystickHitbox">
+                <div class="joystick-base" id="joystickBase">
+                    <div class="thumbstick" id="thumbstick"></div>
+                </div>
+            </div>
+            <div class="dpad-zone" id="dpadZone">
+                <div class="dpad-btn dpad-up" id="btnUp">▲</div>
+                <div class="dpad-btn dpad-right" id="btnRight">▶</div>
+                <div class="dpad-btn dpad-down" id="btnDown">▼</div>
+                <div class="dpad-btn dpad-left" id="btnLeft">◀</div>
+            </div>
+        </div>
+
+        <div class="action-column">
+            <div class="btn-action" id="btnA">A</div>
+            <div class="btn-action" id="btnB">B</div>
+        </div>
+    </div>
+
+    <div class="bottom-right-cluster">
+        <button class="btn-icon" id="btnToggleMode">✜</button>
+        <button class="btn-icon" id="btnFullscreen">⛶</button>
+    </div>
+
+    <script>
+        // --- HAPTIC ENGINE ---
+        function triggerHaptic(ms) { if (navigator.vibrate) { navigator.vibrate(ms); } }
+
+        // --- MODE TOGGLE & FULLSCREEN ---
+        let isDpadMode = false;
+        const btnToggle = document.getElementById('btnToggleMode');
+        const joyHitbox = document.getElementById('joystickHitbox');
+        const dpZone = document.getElementById('dpadZone');
+
+        btnToggle.addEventListener('click', () => {
+            isDpadMode = !isDpadMode;
+            triggerHaptic(15);
+            if (isDpadMode) {
+                joyHitbox.style.display = 'none'; dpZone.style.display = 'block'; btnToggle.innerHTML = '⨀'; 
+            } else {
+                joyHitbox.style.display = 'flex'; dpZone.style.display = 'none'; btnToggle.innerHTML = '✜'; 
+            }
+            cX = 0; cY = 0; forceKineticUpdate();
+        });
+
+        const btnFs = document.getElementById('btnFullscreen');
+        btnFs.addEventListener('click', async () => {
+            try {
+                if (!document.fullscreenElement) {
+                    await document.documentElement.requestFullscreen();
+                    if (screen.orientation && screen.orientation.lock) await screen.orientation.lock("landscape");
+                    btnFs.innerHTML = "✖"; 
+                } else {
+                    await document.exitFullscreen();
+                    if (screen.orientation && screen.orientation.unlock) screen.orientation.unlock();
+                    btnFs.innerHTML = "⛶"; 
+                }
+            } catch (err) { alert("Browser blocked rotation."); }
+        });
+
+        // --- BLE CORE ---
+        if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(()=>{}));
+
+        const UART_SERVICE_UUID = "6e400001-b5a3-f393-e0a9-e50e24dcca9e";
+        const UART_RX_CHARACTERISTIC_UUID = "6e400003-b5a3-f393-e0a9-e50e24dcca9e";
+        let bleDevice, rxChar, isConnected = false;
+        let cX = 0, cY = 0, lX, lY;
+
+        const statusEl = document.getElementById('status'), telEl = document.getElementById('telemetryOut'), connBtn = document.getElementById('btnConnect');
+
+        connBtn.addEventListener('click', async () => {
+            if (bleDevice?.gatt.connected) { bleDevice.gatt.disconnect(); return; }
+            try {
+                bleDevice = await navigator.bluetooth.requestDevice({
+                    filters: [{ namePrefix: "BBC" }, { namePrefix: "micro:bit" }],
+                    optionalServices: [UART_SERVICE_UUID]
+                });
+                const server = await bleDevice.gatt.connect();
+                const service = await server.getPrimaryService(UART_SERVICE_UUID);
+                rxChar = await service.getCharacteristic(UART_RX_CHARACTERISTIC_UUID);
+                isConnected = true; statusEl.innerText = "ONLINE"; statusEl.classList.add('connected');
+                connBtn.innerText = "DISCONNECT"; telEl.classList.remove('offline');
+                await send("mode_analog\n");
+            } catch (e) { console.error("BLE Connection Error:", e); }
+        });
+
+        bleDevice?.addEventListener('gattserverdisconnected', () => {
+            isConnected = false; statusEl.innerText = "OFFLINE"; statusEl.classList.remove('connected');
+            connBtn.innerText = "CONNECT"; telEl.classList.add('offline'); telEl.innerText = "SEVERED";
+        });
+
+        let isWriting = false;
+        let pendingMessage = null;
+
+        async function send(s) {
+            telEl.innerText = s.replace('\n','');
+            if (!rxChar || !isConnected) return;
+
+            if (isWriting) {
+                pendingMessage = s;
+                return;
+            }
+
+            isWriting = true;
+            try { 
+                await rxChar.writeValue(new TextEncoder().encode(s)); 
+            } catch (e) { 
+                console.warn("GATT Write Error:", e); 
+            }
+            isWriting = false;
+
+            if (pendingMessage) {
+                let nextMsg = pendingMessage;
+                pendingMessage = null;
+                send(nextMsg);
+            }
+        }
+
+        const fFormat = (v) => (v>=0?'+':'-') + Math.abs(v).toString().padStart(2,'0');
+        function forceKineticUpdate() {
+            if (cX !== lX || cY !== lY) {
+                send(`X${fFormat(cX)},Y${fFormat(cY)}\n`);
+                lX = cX; lY = cY;
+            }
+        }
+
+        // --- STATIC JOYSTICK ENGINE ---
+        const base = document.getElementById('joystickBase'), thumb = document.getElementById('thumbstick');
+        let activePointerId = null, originX = 0, originY = 0, currentMaxRadius = 120;
+        let edgeHitLock = false; 
+        let wasReversing = false;
+
+        function handleThumbstickMovement(clientX, clientY) {
+            let dx = clientX - originX;
+            let dy = clientY - originY;
+            const dist = Math.hypot(dx, dy);
+            
+            if (dist >= currentMaxRadius) {
+                dx *= currentMaxRadius / dist; dy *= currentMaxRadius / dist;
+                if (!edgeHitLock) { triggerHaptic(30); base.classList.add('max-throttle'); edgeHitLock = true; }
+            } else if (dist < currentMaxRadius * 0.85) {
+                if (edgeHitLock) { base.classList.remove('max-throttle'); edgeHitLock = false; }
+            }
+            
+            thumb.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
+            cX = Math.round((dx / currentMaxRadius) * 90); 
+            cY = Math.round((-dy / currentMaxRadius) * 90);
+
+            if (cY < -5 && !wasReversing) { triggerHaptic(15); wasReversing = true; } 
+            else if (cY > 5 && wasReversing) { triggerHaptic(15); wasReversing = false; }
+            
+            forceKineticUpdate();
+        }
+
+        joyHitbox.addEventListener('pointerdown', (e) => {
+            if (activePointerId !== null) return;
+            activePointerId = e.pointerId; joyHitbox.setPointerCapture(activePointerId);
+            triggerHaptic(20); base.classList.add('active');
+            
+            // Dapatkan kedudukan tapak statik di skrin
+            const bRect = base.getBoundingClientRect();
+            originX = bRect.left + (bRect.width / 2);
+            originY = bRect.top + (bRect.height / 2);
+            currentMaxRadius = bRect.width / 2;
+            
+            cX = 0; cY = 0; edgeHitLock = false; wasReversing = false; 
+            
+            // Gerakkan thumbstick serta merta mengikut posisi jari
+            handleThumbstickMovement(e.clientX, e.clientY);
+        });
+
+        joyHitbox.addEventListener('pointermove', (e) => {
+            if (activePointerId !== e.pointerId) return;
+            handleThumbstickMovement(e.clientX, e.clientY);
+        });
+
+        function resetJoystick(e) {
+            if (activePointerId !== e.pointerId) return;
+            activePointerId = null; base.classList.remove('active', 'max-throttle');
+            thumb.style.transform = `translate(-50%, -50%)`; 
+            cX = 0; cY = 0; edgeHitLock = false; wasReversing = false;
+            forceKineticUpdate();
+        }
+
+        joyHitbox.addEventListener('pointerup', resetJoystick); 
+        joyHitbox.addEventListener('pointercancel', resetJoystick);
+
+        // --- D-PAD ENGINE ---
+        const bindDpad = (id, axis, val) => {
+            const el = document.getElementById(id); let pid = null;
+            el.addEventListener('pointerdown', (e) => {
+                if (pid !== null) return; pid = e.pointerId; el.setPointerCapture(pid);
+                triggerHaptic(15); el.classList.add('active-toggle');
+                if (axis === 'x') cX = val; if (axis === 'y') cY = val;
+                forceKineticUpdate(); 
+            });
+            function release(e) {
+                if (pid !== e.pointerId) return; pid = null; el.classList.remove('active-toggle');
+                if (axis === 'x') cX = 0; if (axis === 'y') cY = 0;
+                forceKineticUpdate(); 
+            }
+            el.addEventListener('pointerup', release); el.addEventListener('pointercancel', release);
+        };
+        bindDpad('btnUp', 'y', 90); bindDpad('btnDown', 'y', -90);
+        bindDpad('btnLeft', 'x', -90); bindDpad('btnRight', 'x', 90);
+
+        // --- ACTION BUTTONS ---
+        const bindBtn = (id, char) => {
+            const el = document.getElementById(id); let pid = null;
+            el.addEventListener('pointerdown', (e) => { 
+                if (pid !== null) return; pid = e.pointerId; el.setPointerCapture(pid);
+                triggerHaptic(15); send(char.toUpperCase() + "\n"); el.classList.add('active-toggle'); 
+            });
+            function release(e) {
+                if (pid !== e.pointerId) return; pid = null;
+                send(char.toLowerCase() + "\n"); el.classList.remove('active-toggle');
+            }
+            el.addEventListener('pointerup', release); el.addEventListener('pointercancel', release);
+        };
+        bindBtn('btnA', 'a'); bindBtn('btnB', 'b');
+
+    </script>
+</body>
+</html>
