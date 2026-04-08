@@ -1,4 +1,4 @@
-/* --- style.css --- */
+/* --- style.css (Fixed Layout) --- */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@700&display=swap');
 
 :root {
@@ -132,6 +132,7 @@ body.is-connected .btn-connect {
     justify-content: center; align-items: center; gap: 30px;
     padding: 20px; padding-top: 5vh; padding-bottom: 5vh; 
     position: relative;
+    width: 100%;
 }
 
 .left-thumb-zone, .action-column {
@@ -166,12 +167,16 @@ body:not(.is-connected) .telemetry-hud {
 
 /* Left Thumb Zone */
 .left-thumb-zone {
-    width: 100%; height: 280px; position: relative;
+    width: 280px; height: 280px; position: relative;
     display: flex; justify-content: center; align-items: center; touch-action: none;
 }
 
 /* Mode 1: STATIC Joystick */
-.joystick-hitbox { width: 100%; height: 100%; position: absolute; touch-action: none; display: flex; justify-content: center; align-items: center; }
+.joystick-hitbox { 
+    width: 100%; height: 100%; position: absolute; touch-action: none; 
+    display: flex; justify-content: center; align-items: center; 
+}
+
 .joystick-base {
     width: 220px; height: 220px; 
     background: radial-gradient(circle, rgba(30, 30, 35, 0.9) 0%, rgba(15, 15, 18, 0.9) 100%);
@@ -222,6 +227,7 @@ body:not(.is-connected) .telemetry-hud {
 /* Mode 2: D-Pad */
 .dpad-zone {
     width: 220px; height: 220px; position: absolute; touch-action: none;
+    left: 50%; top: 50%; transform: translate(-50%, -50%); /* Pastikan ia berada tepat di tengah */
     display: none; 
 }
 
@@ -253,7 +259,7 @@ body:not(.is-connected) .telemetry-hud {
 /* Right Thumb: Action Buttons */
 .action-column { display: flex; flex-direction: column; gap: 25px; touch-action: none; z-index: 10; }
 .btn-action {
-    width: 100px; height: 100px; border-radius: 50%; /* Ditukar bulat penuh untuk gaya konsol premium */
+    width: 100px; height: 100px; border-radius: 50%; 
     background: linear-gradient(145deg, #2a2a30, #1c1c20); 
     border: 1px solid rgba(255, 255, 255, 0.05);
     color: var(--text-muted); font-size: 1.8rem; font-weight: 700;
@@ -296,13 +302,35 @@ body:not(.is-connected) .telemetry-hud {
     transform: scale(0.9); 
 }
 
-/* --- LANDSCAPE OVERRIDES --- */
+/* --- LANDSCAPE OVERRIDES (Fixed untuk Web/Desktop) --- */
 @media (orientation: landscape) {
     .header { padding: 10px 25px; }
-    .control-grid { flex-direction: row; justify-content: space-between; align-items: center; padding: 20px 40px; padding-bottom: 0; }
-    .left-thumb-zone { width: auto; height: 100%; order: 1; }
-    .telemetry-hud { position: absolute; left: 50%; top: 30px; transform: translateX(-50%); width: auto; min-width: 160px; font-size: 1rem; margin: 0; }
-    .action-column { order: 3; flex-direction: row; gap: 30px; margin-right: 2vw; }
+    .control-grid { 
+        flex-direction: row; 
+        justify-content: space-around; /* Guna space-around supaya tak lekat ke tepi sangat */
+        align-items: center; 
+        padding: 20px 5vw; 
+        padding-bottom: 0; 
+    }
+    .left-thumb-zone { 
+        width: 280px; /* Fix saiz width supaya tak hilang */
+        min-width: 280px;
+        height: 280px; 
+        order: 1; 
+    }
+    .telemetry-hud { 
+        position: absolute; 
+        left: 50%; top: 30px; 
+        transform: translateX(-50%); 
+        width: auto; 
+        min-width: 160px; 
+        font-size: 1rem; margin: 0; 
+    }
+    .action-column { 
+        order: 3; 
+        flex-direction: row; 
+        gap: 30px; 
+    }
     .bottom-right-cluster { bottom: 20px; right: 20px; }
     .btn-icon { width: 45px; height: 45px; font-size: 1.2rem; }
 }
