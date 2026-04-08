@@ -1,20 +1,20 @@
-/* --- style.css (Fixed Layout) --- */
+/* --- style.css (FULL VERSION - CENTERED LAYOUT) --- */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@700&display=swap');
 
 :root {
     --bg-color: #080808;
     --panel-bg: rgba(18, 18, 20, 0.85);
-    --accent: #fc304e;        /* Merah Utama Moden */
-    --accent-dim: #3b0a14;    /* Merah Gelap Elegan */
-    --danger: #f5a623;        /* Kuning amaran premium */
-    --success: #10b981;       /* Hijau status moden */
+    --accent: #fc304e;        
+    --accent-dim: #3b0a14;    
+    --danger: #f5a623;        
+    --success: #10b981;       
     --text-main: #f3f4f6;
     --text-muted: #9ca3af;
 }
 
 * { 
     box-sizing: border-box; 
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+    font-family: 'Inter', sans-serif; 
     user-select: none; 
     -webkit-user-select: none; 
     -webkit-tap-highlight-color: transparent;
@@ -40,297 +40,117 @@ html, body {
     border-bottom: 1px solid var(--accent-dim);
     display: flex; justify-content: space-between; align-items: center;
     z-index: 100;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
-    transition: all 0.4s ease;
 }
 
-body.is-connected .header {
-    border-bottom: 1px solid rgba(252, 48, 78, 0.4);
-    box-shadow: 0 4px 25px rgba(252, 48, 78, 0.15);
-}
-
-.brand-line { 
-    font-weight: 700; 
-    color: var(--accent); 
-    letter-spacing: 1.5px; 
-    font-size: 1.05rem; 
-    white-space: nowrap; 
-}
-
-.ver-tag { 
-    color: var(--text-muted); 
-    font-size: 0.65rem; 
-    font-weight: 600;
-    margin-left: 8px; 
-    padding: 2px 6px;
-    background: rgba(255,255,255,0.05);
-    border-radius: 4px;
-}
+.brand-line { font-weight: 700; color: var(--accent); letter-spacing: 1.5px; font-size: 1rem; }
+.ver-tag { color: var(--text-muted); font-size: 0.65rem; margin-left: 8px; padding: 2px 6px; background: rgba(255,255,255,0.05); border-radius: 4px; }
 
 .status-container { display: flex; align-items: center; gap: 10px; }
-
-.status-dot {
-    width: 10px; height: 10px; border-radius: 50%;
-    background-color: #333; 
-    box-shadow: inset 0 1px 2px rgba(0,0,0,0.8);
-    transition: all 0.4s ease;
-}
-
-body.is-connected .status-dot {
-    background-color: var(--success);
-    box-shadow: 0 0 8px var(--success), 0 0 12px rgba(16, 185, 129, 0.5);
-}
-
-#status { 
-    font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; 
-    font-weight: 700; transition: all 0.4s; 
-    min-width: 60px; letter-spacing: 0.5px;
-}
-
-body.is-connected #status { 
-    color: var(--success); 
-    text-shadow: 0 0 8px rgba(16, 185, 129, 0.3);
-}
+.status-dot { width: 10px; height: 10px; border-radius: 50%; background-color: #333; transition: 0.4s; }
+body.is-connected .status-dot { background-color: var(--success); box-shadow: 0 0 8px var(--success); }
 
 .btn-connect {
-    background: rgba(252, 48, 78, 0.05); 
-    color: var(--accent);
-    border: 1px solid var(--accent); 
-    padding: 8px 18px;
-    border-radius: 6px;
-    font-size: 0.8rem; text-transform: uppercase; cursor: pointer; font-weight: 700;
-    letter-spacing: 0.5px;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    background: rgba(252, 48, 78, 0.1); color: var(--accent); border: 1px solid var(--accent); 
+    padding: 8px 15px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; cursor: pointer;
 }
 
-body:not(.is-connected) .btn-connect {
-    animation: pulse-btn 2.5s infinite;
-}
-
-@keyframes pulse-btn {
-    0% { box-shadow: 0 0 0 0 rgba(252, 48, 78, 0.3); border-color: rgba(252, 48, 78, 0.5); }
-    70% { box-shadow: 0 0 0 8px rgba(252, 48, 78, 0); border-color: var(--accent); }
-    100% { box-shadow: 0 0 0 0 rgba(252, 48, 78, 0); border-color: rgba(252, 48, 78, 0.5); }
-}
-
-body.is-connected .btn-connect {
-    background: rgba(252, 48, 78, 0.15);
-    color: var(--text-main);
-    border-color: rgba(252, 48, 78, 0.4);
-    animation: none;
-}
-
-.btn-connect:active { 
-    background: var(--accent); 
-    color: #fff; 
-    transform: scale(0.96);
-}
-
-/* --- CONTROL GRID --- */
+/* --- MAIN CONTROL GRID (FIXED FOR CENTER) --- */
 .control-grid {
-    flex: 1; display: flex; flex-direction: column;
-    justify-content: center; align-items: center; gap: 30px;
-    padding: 20px; padding-top: 5vh; padding-bottom: 5vh; 
+    flex: 1; 
+    display: flex; 
+    flex-direction: column; 
+    justify-content: center; 
+    align-items: center; 
+    gap: 30px;
+    width: 100%; 
+    max-width: 1100px; /* Supaya tak terlalu jauh ke tepi skrin lebar */
+    margin: 0 auto;    /* Sentiasa di tengah skrin */
     position: relative;
-    width: 100%;
-}
-
-.left-thumb-zone, .action-column {
-    transition: opacity 0.5s ease, filter 0.5s ease;
-}
-
-body:not(.is-connected) .left-thumb-zone,
-body:not(.is-connected) .action-column {
-    opacity: 0.4;
-    filter: grayscale(60%);
 }
 
 .telemetry-hud {
-    background: rgba(10, 10, 12, 0.8); 
+    background: rgba(10, 10, 12, 0.9); 
     border: 1px solid var(--accent-dim);
-    padding: 10px 24px; border-radius: 8px;
-    font-family: 'JetBrains Mono', 'Courier New', Courier, monospace;
-    font-size: 1.15rem; font-weight: 700; color: var(--accent);
-    text-align: center; 
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5), inset 0 0 10px rgba(252, 48, 78, 0.05);
-    z-index: 10; transition: all 0.4s ease;
-    letter-spacing: 2px;
-    backdrop-filter: blur(4px);
+    padding: 10px 25px; border-radius: 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1.2rem; color: var(--accent);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+    z-index: 10;
 }
 
-body:not(.is-connected) .telemetry-hud { 
-    color: var(--text-muted); 
-    border-color: #222; 
-    box-shadow: 0 4px 10px rgba(0,0,0,0.5); 
-    background: #111; 
-}
-
-/* Left Thumb Zone */
+/* Joystick & D-Pad Zone */
 .left-thumb-zone {
-    width: 280px; height: 280px; position: relative;
-    display: flex; justify-content: center; align-items: center; touch-action: none;
-}
-
-/* Mode 1: STATIC Joystick */
-.joystick-hitbox { 
-    width: 100%; height: 100%; position: absolute; touch-action: none; 
-    display: flex; justify-content: center; align-items: center; 
+    width: 260px; height: 260px; position: relative;
+    display: flex; justify-content: center; align-items: center;
 }
 
 .joystick-base {
-    width: 220px; height: 220px; 
-    background: radial-gradient(circle, rgba(30, 30, 35, 0.9) 0%, rgba(15, 15, 18, 0.9) 100%);
-    border: 2px solid rgba(255, 255, 255, 0.05); 
-    border-radius: 50%;
-    position: relative;
-    transition: all 0.3s ease; 
-    box-shadow: 0 10px 30px rgba(0,0,0,0.6), inset 0 2px 10px rgba(255,255,255,0.02);
+    width: 200px; height: 200px; 
+    background: radial-gradient(circle, #1e1e23 0%, #0f0f12 100%);
+    border: 2px solid rgba(255, 255, 255, 0.05); border-radius: 50%;
+    position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.6);
 }
-
-.joystick-base.active { 
-    border-color: rgba(252, 48, 78, 0.4); 
-    box-shadow: 0 0 25px rgba(252, 48, 78, 0.15), inset 0 2px 15px rgba(255,255,255,0.05); 
-}
-
-.joystick-base.max-throttle { 
-    border-color: var(--danger); 
-    box-shadow: 0 0 25px rgba(245, 166, 35, 0.2); 
-}
-
-/* Crosshair lines inside joystick */
-.joystick-base::before, .joystick-base::after { content: ''; position: absolute; background: rgba(255, 255, 255, 0.05); }
-.joystick-base::before { width: 1px; height: 100%; left: 50%; top: 0; }
-.joystick-base::after { height: 1px; width: 100%; top: 50%; left: 0; }
 
 .thumbstick {
-    width: 80px; height: 80px; 
+    width: 75px; height: 75px; 
     background: linear-gradient(135deg, #444 0%, #1a1a1a 100%);
-    border: 2px solid #555;
-    border-radius: 50%; position: absolute; top: 50%; left: 50%;
-    transform: translate(-50%, -50%); pointer-events: none;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.8), inset 0 2px 4px rgba(255,255,255,0.15), inset 0 -4px 8px rgba(0,0,0,0.6);
-    transition: background 0.2s, border-color 0.2s;
+    border: 2px solid #555; border-radius: 50%; 
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
 }
 
-.joystick-base.active .thumbstick {
-    background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dim) 100%);
-    border-color: #ff6b84;
-    box-shadow: 0 10px 25px rgba(252, 48, 78, 0.4), inset 0 2px 4px rgba(255,255,255,0.3);
-}
+.joystick-base.active .thumbstick { background: var(--accent); border-color: #ff6b84; }
 
-.joystick-base.max-throttle .thumbstick { 
-    background: linear-gradient(135deg, var(--danger) 0%, #8f6200 100%);
-    border-color: #ffc247;
-    box-shadow: 0 10px 25px rgba(245, 166, 35, 0.4), inset 0 2px 4px rgba(255,255,255,0.3);
-}
-
-/* Mode 2: D-Pad */
-.dpad-zone {
-    width: 220px; height: 220px; position: absolute; touch-action: none;
-    left: 50%; top: 50%; transform: translate(-50%, -50%); /* Pastikan ia berada tepat di tengah */
-    display: none; 
-}
-
+/* D-Pad Buttons */
+.dpad-zone { width: 200px; height: 200px; position: absolute; display: none; }
 .dpad-btn {
-    position: absolute; width: 75px; height: 75px; border-radius: 12px;
-    background: linear-gradient(145deg, #2a2a30, #1c1c20);
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    color: var(--text-muted); font-size: 1.8rem; display: flex; justify-content: center; align-items: center;
-    box-shadow: 5px 5px 15px rgba(0,0,0,0.5), -2px -2px 10px rgba(255,255,255,0.03); 
-    transition: all 0.1s ease; touch-action: none;
+    position: absolute; width: 70px; height: 70px; border-radius: 10px;
+    background: #1c1c20; color: #555; display: flex; justify-content: center; align-items: center;
+    font-size: 1.5rem; border: 1px solid #333;
 }
-
 .dpad-up { top: 0; left: 50%; transform: translateX(-50%); }
 .dpad-down { bottom: 0; left: 50%; transform: translateX(-50%); }
-.dpad-left { top: 50%; left: 0; transform: translateY(-50%); }
-.dpad-right { top: 50%; right: 0; transform: translateY(-50%); }
+.dpad-left { left: 0; top: 50%; transform: translateY(-50%); }
+.dpad-right { right: 0; top: 50%; transform: translateY(-50%); }
+.dpad-btn.active-toggle { background: var(--accent); color: white; }
 
-.dpad-btn.active-toggle { 
-    background: var(--accent); 
-    color: #fff; 
-    border-color: transparent; 
-    box-shadow: 0 0 20px rgba(252, 48, 78, 0.4), inset 0 3px 8px rgba(0,0,0,0.3); 
-}
-.dpad-up.active-toggle { transform: translateX(-50%) translateY(4px) scale(0.95); }
-.dpad-down.active-toggle { transform: translateX(-50%) translateY(4px) scale(0.95); }
-.dpad-left.active-toggle { transform: translateY(-50%) translateX(4px) scale(0.95); }
-.dpad-right.active-toggle { transform: translateY(-50%) translateX(-4px) scale(0.95); }
-
-/* Right Thumb: Action Buttons */
-.action-column { display: flex; flex-direction: column; gap: 25px; touch-action: none; z-index: 10; }
+/* Action Buttons */
+.action-column { display: flex; flex-direction: column; gap: 20px; }
 .btn-action {
-    width: 100px; height: 100px; border-radius: 50%; 
-    background: linear-gradient(145deg, #2a2a30, #1c1c20); 
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    color: var(--text-muted); font-size: 1.8rem; font-weight: 700;
-    display: flex; justify-content: center; align-items: center; touch-action: none;
-    box-shadow: 6px 6px 15px rgba(0,0,0,0.5), -2px -2px 10px rgba(255,255,255,0.02);
-    transition: all 0.1s ease;
+    width: 90px; height: 90px; border-radius: 50%; background: #1c1c20;
+    color: #9ca3af; font-size: 1.8rem; font-weight: 700;
+    display: flex; justify-content: center; align-items: center;
+    border: 1px solid #333; box-shadow: 0 5px 15px rgba(0,0,0,0.4);
 }
+.btn-action.active-toggle { background: var(--accent); color: white; transform: scale(0.95); }
 
-.btn-action.active-toggle { 
-    transform: scale(0.92) translateY(4px); 
-    background: var(--accent); 
-    color: #fff;
-    border-color: transparent;
-    box-shadow: 0 0 25px rgba(252, 48, 78, 0.5), inset 0 4px 10px rgba(0,0,0,0.4); 
-}
-
-/* Bottom Right Cluster */
-.bottom-right-cluster {
-    position: fixed; bottom: 25px; right: 25px; display: flex; gap: 15px; z-index: 200;
-}
-
+/* Bottom Tools */
+.bottom-right-cluster { position: fixed; bottom: 20px; right: 20px; display: flex; gap: 10px; }
 .btn-icon {
-    background: rgba(30, 30, 35, 0.8); 
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(8px);
-    color: var(--text-main); font-size: 1.4rem; width: 50px; height: 50px; border-radius: 12px;
-    display: flex; justify-content: center; align-items: center; cursor: pointer;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.4);
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    width: 45px; height: 45px; border-radius: 10px; background: #1e1e23;
+    color: white; border: 1px solid #333; display: flex; justify-content: center; align-items: center;
 }
 
-.btn-icon:hover {
-    background: rgba(50, 50, 55, 0.9);
-}
-
-.btn-icon:active { 
-    background: var(--accent); 
-    color: #fff; 
-    border-color: transparent;
-    transform: scale(0.9); 
-}
-
-/* --- LANDSCAPE OVERRIDES (Fixed untuk Web/Desktop) --- */
+/* --- LANDSCAPE OPTIMIZATION (CENTERED) --- */
 @media (orientation: landscape) {
-    .header { padding: 10px 25px; }
     .control-grid { 
         flex-direction: row; 
-        justify-content: space-around; /* Guna space-around supaya tak lekat ke tepi sangat */
-        align-items: center; 
-        padding: 20px 5vw; 
-        padding-bottom: 0; 
+        justify-content: center; /* Paksa ke tengah */
+        gap: 12vw;               /* Jarak dinamik antara kiri dan kanan */
+        padding: 0 40px;
     }
-    .left-thumb-zone { 
-        width: 280px; /* Fix saiz width supaya tak hilang */
-        min-width: 280px;
-        height: 280px; 
-        order: 1; 
-    }
+    
     .telemetry-hud { 
-        position: absolute; 
-        left: 50%; top: 30px; 
-        transform: translateX(-50%); 
-        width: auto; 
-        min-width: 160px; 
-        font-size: 1rem; margin: 0; 
+        position: absolute; top: 15px; left: 50%; transform: translateX(-50%); 
+        font-size: 0.9rem; padding: 8px 20px;
     }
+
     .action-column { 
-        order: 3; 
         flex-direction: row; 
         gap: 30px; 
     }
-    .bottom-right-cluster { bottom: 20px; right: 20px; }
-    .btn-icon { width: 45px; height: 45px; font-size: 1.2rem; }
+}
+
+/* Lock for very wide screens (Desktop Chrome) */
+@media (min-width: 1200px) {
+    .control-grid { gap: 150px; }
 }
