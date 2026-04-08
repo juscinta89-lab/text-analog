@@ -1,4 +1,4 @@
-/* --- style.css (FULL VERSION - CENTERED LAYOUT) --- */
+/* --- style.css (PS4/PS5 ERGONOMIC LAYOUT) --- */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@700&display=swap');
 
 :root {
@@ -6,7 +6,6 @@
     --panel-bg: rgba(18, 18, 20, 0.85);
     --accent: #fc304e;        
     --accent-dim: #3b0a14;    
-    --danger: #f5a623;        
     --success: #10b981;       
     --text-main: #f3f4f6;
     --text-muted: #9ca3af;
@@ -33,124 +32,135 @@ html, body {
 
 /* --- HEADER --- */
 .header {
-    padding: 15px 20px; 
+    padding: 12px 20px; 
     background: var(--panel-bg);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(10px);
     border-bottom: 1px solid var(--accent-dim);
     display: flex; justify-content: space-between; align-items: center;
     z-index: 100;
 }
 
-.brand-line { font-weight: 700; color: var(--accent); letter-spacing: 1.5px; font-size: 1rem; }
-.ver-tag { color: var(--text-muted); font-size: 0.65rem; margin-left: 8px; padding: 2px 6px; background: rgba(255,255,255,0.05); border-radius: 4px; }
-
-.status-container { display: flex; align-items: center; gap: 10px; }
-.status-dot { width: 10px; height: 10px; border-radius: 50%; background-color: #333; transition: 0.4s; }
+.brand-line { font-weight: 700; color: var(--accent); letter-spacing: 1px; font-size: 0.9rem; }
+.status-container { display: flex; align-items: center; gap: 8px; }
+.status-dot { width: 8px; height: 8px; border-radius: 50%; background-color: #333; }
 body.is-connected .status-dot { background-color: var(--success); box-shadow: 0 0 8px var(--success); }
 
 .btn-connect {
     background: rgba(252, 48, 78, 0.1); color: var(--accent); border: 1px solid var(--accent); 
-    padding: 8px 15px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; cursor: pointer;
+    padding: 6px 12px; border-radius: 4px; font-size: 0.7rem; font-weight: 700; cursor: pointer;
 }
 
-/* --- MAIN CONTROL GRID (FIXED FOR CENTER) --- */
+/* --- TELEMETRY (CENTER TOP) --- */
+.telemetry-hud {
+    position: absolute;
+    top: 80px; left: 50%;
+    transform: translateX(-50%);
+    background: rgba(10, 10, 12, 0.8); 
+    border: 1px solid var(--accent-dim);
+    padding: 8px 20px; border-radius: 20px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1rem; color: var(--accent);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+    z-index: 10;
+    pointer-events: none;
+}
+
+/* --- MAIN CONTROL GRID (PS4 STYLE) --- */
 .control-grid {
     flex: 1; 
     display: flex; 
-    flex-direction: column; 
-    justify-content: center; 
-    align-items: center; 
-    gap: 30px;
+    flex-direction: row; /* Selalu row untuk landscape */
+    justify-content: space-between; /* Tolak satu ke kiri, satu ke kanan */
+    align-items: flex-end; /* Letak di bahagian bawah skrin sikit (macam pegang controller) */
     width: 100%; 
-    max-width: 1100px; /* Supaya tak terlalu jauh ke tepi skrin lebar */
-    margin: 0 auto;    /* Sentiasa di tengah skrin */
+    padding: 0 6% 8% 6%; /* Jarak 6% dari tepi, 8% dari bawah */
     position: relative;
-}
-
-.telemetry-hud {
-    background: rgba(10, 10, 12, 0.9); 
-    border: 1px solid var(--accent-dim);
-    padding: 10px 25px; border-radius: 8px;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 1.2rem; color: var(--accent);
-    box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-    z-index: 10;
 }
 
 /* Joystick & D-Pad Zone */
 .left-thumb-zone {
-    width: 260px; height: 260px; position: relative;
+    width: 240px; height: 240px; 
+    position: relative;
     display: flex; justify-content: center; align-items: center;
 }
 
 .joystick-base {
-    width: 200px; height: 200px; 
-    background: radial-gradient(circle, #1e1e23 0%, #0f0f12 100%);
-    border: 2px solid rgba(255, 255, 255, 0.05); border-radius: 50%;
-    position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+    width: 190px; height: 190px; 
+    background: radial-gradient(circle, #25252b 0%, #0f0f12 100%);
+    border: 3px solid rgba(255, 255, 255, 0.03); border-radius: 50%;
+    position: relative; box-shadow: 0 15px 35px rgba(0,0,0,0.7);
 }
 
 .thumbstick {
-    width: 75px; height: 75px; 
-    background: linear-gradient(135deg, #444 0%, #1a1a1a 100%);
-    border: 2px solid #555; border-radius: 50%; 
+    width: 80px; height: 80px; 
+    background: linear-gradient(135deg, #444 0%, #151515 100%);
+    border: 2px solid #333; border-radius: 50%; 
     position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    box-shadow: 0 8px 15px rgba(0,0,0,0.5), inset 0 2px 5px rgba(255,255,255,0.1);
 }
 
 .joystick-base.active .thumbstick { background: var(--accent); border-color: #ff6b84; }
 
 /* D-Pad Buttons */
-.dpad-zone { width: 200px; height: 200px; position: absolute; display: none; }
+.dpad-zone { width: 190px; height: 190px; position: absolute; display: none; }
 .dpad-btn {
-    position: absolute; width: 70px; height: 70px; border-radius: 10px;
-    background: #1c1c20; color: #555; display: flex; justify-content: center; align-items: center;
-    font-size: 1.5rem; border: 1px solid #333;
+    position: absolute; width: 65px; height: 65px; border-radius: 8px;
+    background: #1c1c20; color: #777; display: flex; justify-content: center; align-items: center;
+    font-size: 1.4rem; border: 1px solid #333;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
 }
-.dpad-up { top: 0; left: 50%; transform: translateX(-50%); }
-.dpad-down { bottom: 0; left: 50%; transform: translateX(-50%); }
-.dpad-left { left: 0; top: 50%; transform: translateY(-50%); }
-.dpad-right { right: 0; top: 50%; transform: translateY(-50%); }
-.dpad-btn.active-toggle { background: var(--accent); color: white; }
+.dpad-up { top: 0; left: 50%; transform: translateX(-50%); border-radius: 8px 8px 2px 2px; }
+.dpad-down { bottom: 0; left: 50%; transform: translateX(-50%); border-radius: 2px 2px 8px 8px; }
+.dpad-left { left: 0; top: 50%; transform: translateY(-50%); border-radius: 8px 2px 2px 8px; }
+.dpad-right { right: 0; top: 50%; transform: translateY(-50%); border-radius: 2px 8px 8px 2px; }
+.dpad-btn.active-toggle { background: var(--accent); color: white; border-color: transparent; }
 
-/* Action Buttons */
-.action-column { display: flex; flex-direction: column; gap: 20px; }
+/* Action Buttons (Right Side) */
+.action-column { 
+    display: flex; 
+    flex-direction: column; 
+    gap: 25px; 
+    margin-bottom: 20px; /* Tingkatkan sikit kedudukan butang */
+}
+
 .btn-action {
-    width: 90px; height: 90px; border-radius: 50%; background: #1c1c20;
-    color: #9ca3af; font-size: 1.8rem; font-weight: 700;
+    width: 95px; height: 95px; border-radius: 50%; 
+    background: #1c1c20;
+    color: #f3f4f6; font-size: 1.8rem; font-weight: 700;
     display: flex; justify-content: center; align-items: center;
-    border: 1px solid #333; box-shadow: 0 5px 15px rgba(0,0,0,0.4);
+    border: 1px solid #333; 
+    box-shadow: 0 8px 20px rgba(0,0,0,0.6), inset 0 2px 5px rgba(255,255,255,0.05);
+    text-shadow: 0 2px 4px rgba(0,0,0,0.5);
 }
-.btn-action.active-toggle { background: var(--accent); color: white; transform: scale(0.95); }
+.btn-action.active-toggle { 
+    background: var(--accent); 
+    color: white; 
+    transform: scale(0.9) translateY(5px); 
+    box-shadow: 0 2px 5px rgba(0,0,0,0.8);
+}
 
-/* Bottom Tools */
-.bottom-right-cluster { position: fixed; bottom: 20px; right: 20px; display: flex; gap: 10px; }
+/* Floating Tools */
+.bottom-right-cluster { 
+    position: fixed; 
+    bottom: 20px; 
+    left: 50%; 
+    transform: translateX(-50%); /* Letak di bawah tengah supaya tak ganggu jari */
+    display: flex; 
+    gap: 15px; 
+}
+
 .btn-icon {
-    width: 45px; height: 45px; border-radius: 10px; background: #1e1e23;
-    color: white; border: 1px solid #333; display: flex; justify-content: center; align-items: center;
+    width: 40px; height: 40px; border-radius: 50%; 
+    background: rgba(30, 30, 35, 0.6);
+    color: #999; border: 1px solid #444; 
+    display: flex; justify-content: center; align-items: center;
+    backdrop-filter: blur(5px);
 }
 
-/* --- LANDSCAPE OPTIMIZATION (CENTERED) --- */
-@media (orientation: landscape) {
-    .control-grid { 
-        flex-direction: row; 
-        justify-content: center; /* Paksa ke tengah */
-        gap: 12vw;               /* Jarak dinamik antara kiri dan kanan */
-        padding: 0 40px;
-    }
-    
-    .telemetry-hud { 
-        position: absolute; top: 15px; left: 50%; transform: translateX(-50%); 
-        font-size: 0.9rem; padding: 8px 20px;
-    }
-
-    .action-column { 
-        flex-direction: row; 
-        gap: 30px; 
-    }
-}
-
-/* Lock for very wide screens (Desktop Chrome) */
-@media (min-width: 1200px) {
-    .control-grid { gap: 150px; }
+/* --- RESPONSIVE ADJUSTMENTS --- */
+@media (max-width: 700px) {
+    .control-grid { padding: 0 4% 10% 4%; }
+    .left-thumb-zone { width: 180px; height: 180px; }
+    .joystick-base, .dpad-zone { width: 160px; height: 160px; }
+    .btn-action { width: 80px; height: 80px; }
 }
