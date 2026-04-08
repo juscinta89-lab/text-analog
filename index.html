@@ -6,227 +6,10 @@
     <title>MICROJOY (Red Edition)</title>
     
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#050505">
+    <meta name="theme-color" content="#080808">
     <link rel="apple-touch-icon" href="icon.png">
 
-    <style>
-        :root {
-            --bg-color: #050505;
-            --panel-bg: #111;
-            --accent: #ff1a40;       /* Merah Utama */
-            --accent-dim: #4d0010;   /* Merah Gelap untuk garisan */
-            --danger: #ffbb00;       /* Kuning amaran supaya kontra dengan merah */
-            --success: #00e676;      /* Hijau untuk status bersambung */
-            --text-main: #e0e0e0;
-        }
-
-        * { box-sizing: border-box; font-family: 'Courier New', Courier, monospace; user-select: none; -webkit-user-select: none; }
-
-        html, body {
-            margin: 0; padding: 0;
-            width: 100%; height: 100dvh;
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            overflow: hidden;
-            touch-action: none;
-            display: flex; flex-direction: column;
-        }
-
-        /* --- HEADER --- */
-        .header {
-            padding: 12px 15px; background: var(--panel-bg);
-            border-bottom: 1px solid var(--accent-dim);
-            display: flex; justify-content: space-between; align-items: center;
-            z-index: 100;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-            transition: border-color 0.4s;
-        }
-        
-        /* Bila bersambung, header ada sedikit pantulan warna */
-        body.is-connected .header {
-            border-bottom: 1px solid rgba(255, 26, 64, 0.4);
-        }
-        
-        .brand-line { font-weight: bold; color: var(--accent); letter-spacing: 1px; font-size: 1rem; white-space: nowrap; text-shadow: 0 0 5px rgba(255, 26, 64, 0.3); }
-        .ver-tag { color: #ffffff; font-size: 0.6rem; opacity: 0.5; margin-left: 6px; }
-        
-        .status-container { display: flex; align-items: center; gap: 8px; }
-        
-        /* DOT INDICATOR BARU */
-        .status-dot {
-            width: 8px; height: 8px; border-radius: 50%;
-            background-color: #444; /* Warna asal offline */
-            box-shadow: inset 0 1px 2px rgba(0,0,0,0.5);
-            transition: all 0.4s ease;
-        }
-        
-        /* Animasi Dot bila Online */
-        body.is-connected .status-dot {
-            background-color: var(--success);
-            box-shadow: 0 0 8px var(--success), 0 0 15px var(--success);
-        }
-
-        #status { 
-            font-size: 0.7rem; color: #666; text-transform: uppercase; 
-            font-weight: bold; transition: color 0.4s, text-shadow 0.4s; 
-            min-width: 55px;
-        }
-        body.is-connected #status { 
-            color: var(--success); 
-            text-shadow: 0 0 5px rgba(0, 230, 118, 0.4);
-        }
-
-        .btn-connect {
-            background: rgba(255, 26, 64, 0.1); color: var(--accent);
-            border: 1px solid var(--accent); padding: 7px 15px;
-            font-size: 0.8rem; text-transform: uppercase; cursor: pointer; font-weight: bold;
-            clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
-            transition: all 0.3s;
-        }
-        
-        /* Animasi pulsing button Connect bila offline */
-        body:not(.is-connected) .btn-connect {
-            animation: pulse-btn 2s infinite;
-        }
-        @keyframes pulse-btn {
-            0% { box-shadow: 0 0 0 0 rgba(255, 26, 64, 0.4); border-color: rgba(255, 26, 64, 0.5); }
-            70% { box-shadow: 0 0 0 6px rgba(255, 26, 64, 0); border-color: rgba(255, 26, 64, 1); }
-            100% { box-shadow: 0 0 0 0 rgba(255, 26, 64, 0); border-color: rgba(255, 26, 64, 0.5); }
-        }
-
-        body.is-connected .btn-connect {
-            background: rgba(255, 26, 64, 0.2);
-            color: #fff;
-            border-color: rgba(255, 26, 64, 0.5);
-            animation: none; /* Berhenti animasi bila dah connect */
-        }
-
-        .btn-connect:active { background: var(--accent); color: #000; }
-
-        /* --- CONTROL GRID --- */
-        .control-grid {
-            flex: 1; display: flex; flex-direction: column;
-            justify-content: center; align-items: center; gap: 20px;
-            padding: 20px; padding-top: 8vh; padding-bottom: 5vh; 
-            position: relative;
-        }
-
-        /* DIM EFFECT BILA OFFLINE */
-        .left-thumb-zone, .action-column {
-            transition: opacity 0.5s ease, filter 0.5s ease;
-        }
-        body:not(.is-connected) .left-thumb-zone,
-        body:not(.is-connected) .action-column {
-            opacity: 0.35;
-            filter: grayscale(80%);
-        }
-        body.is-connected .left-thumb-zone,
-        body.is-connected .action-column {
-            opacity: 1;
-            filter: grayscale(0%);
-        }
-
-        .telemetry-hud {
-            background: #000; border: 1px solid var(--accent-dim);
-            padding: 8px 18px; border-radius: 20px;
-            font-size: 1.1rem; font-weight: bold; color: var(--accent);
-            text-align: center; box-shadow: 0 0 15px rgba(255, 26, 64, 0.2);
-            z-index: 10; transition: all 0.4s ease;
-            letter-spacing: 2px;
-        }
-        body:not(.is-connected) .telemetry-hud { 
-            color: #444; border-color: #222; box-shadow: none; background: #0a0a0a; letter-spacing: 1px;
-        }
-
-        /* Left Thumb Zone */
-        .left-thumb-zone {
-            width: 100%; height: 300px; position: relative;
-            display: flex; justify-content: center; align-items: center; touch-action: none;
-        }
-
-        /* Mode 1: STATIC Joystick */
-        .joystick-hitbox { width: 100%; height: 100%; position: absolute; touch-action: none; display: flex; justify-content: center; align-items: center; }
-        .joystick-base {
-            width: 240px; height: 240px; background: rgba(20, 20, 20, 0.6);
-            border: 2px solid rgba(255, 26, 64, 0.2); border-radius: 50%;
-            position: relative;
-            transition: border-color 0.2s, box-shadow 0.3s; backdrop-filter: blur(4px);
-        }
-        .joystick-base.active { border-color: rgba(255, 26, 64, 0.5); box-shadow: 0 0 20px rgba(255, 26, 64, 0.2); }
-        .joystick-base.max-throttle { border-color: var(--danger); box-shadow: 0 0 20px rgba(255, 187, 0, 0.3); }
-        .joystick-base::before, .joystick-base::after { content: ''; position: absolute; background: rgba(255, 26, 64, 0.2); }
-        .joystick-base::before { width: 1px; height: 100%; left: 50%; top: 0; }
-        .joystick-base::after { height: 1px; width: 100%; top: 50%; left: 0; box-shadow: 0 0 5px rgba(255, 26, 64, 0.5); }
-        
-        .thumbstick {
-            width: 85px; height: 85px; background: radial-gradient(circle, var(--accent) 0%, #8f001b 100%);
-            border-radius: 50%; position: absolute; top: 50%; left: 50%;
-            transform: translate(-50%, -50%); pointer-events: none;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.5), inset 0 -3px 5px rgba(0,0,0,0.3);
-        }
-        .joystick-base.max-throttle .thumbstick { background: radial-gradient(circle, var(--danger) 0%, #8f6200 100%); }
-
-        /* Mode 2: D-Pad */
-        .dpad-zone {
-            width: 240px; height: 240px; position: absolute; touch-action: none;
-            display: none; 
-        }
-        .dpad-btn {
-            position: absolute; width: 85px; height: 85px; border-radius: 12px;
-            background: rgba(30, 30, 30, 0.8); border: 2px solid rgba(255, 26, 64, 0.3);
-            color: var(--accent); font-size: 2.2rem; display: flex; justify-content: center; align-items: center;
-            box-shadow: 0 5px 10px rgba(0,0,0,0.5); transition: background 0.05s, transform 0.05s, box-shadow 0.1s; touch-action: none;
-        }
-        .dpad-up { top: 0; left: 50%; transform: translateX(-50%); }
-        .dpad-down { bottom: 0; left: 50%; transform: translateX(-50%); }
-        .dpad-left { top: 50%; left: 0; transform: translateY(-50%); }
-        .dpad-right { top: 50%; right: 0; transform: translateY(-50%); }
-        
-        .dpad-btn.active-toggle { background: var(--accent); color: #000; border-color: #fff; box-shadow: 0 0 20px var(--accent); }
-        .dpad-up.active-toggle { transform: translateX(-50%) translateY(2px) scale(0.95); }
-        .dpad-down.active-toggle { transform: translateX(-50%) translateY(2px) scale(0.95); }
-        .dpad-left.active-toggle { transform: translateY(-50%) translateY(2px) scale(0.95); }
-        .dpad-right.active-toggle { transform: translateY(-50%) translateY(2px) scale(0.95); }
-
-        /* Right Thumb: Stacked Buttons */
-        .action-column { display: flex; flex-direction: column; gap: 20px; touch-action: none; z-index: 10; }
-        .btn-action {
-            width: 110px; height: 65px; border-radius: 15px;
-            background: rgba(30, 30, 30, 0.8); border: 2px solid rgba(255, 26, 64, 0.3);
-            color: var(--accent); font-size: 1.5rem; font-weight: bold;
-            display: flex; justify-content: center; align-items: center; touch-action: none;
-            box-shadow: 0 8px 15px rgba(0,0,0,0.5), inset 0 2px 5px rgba(255,255,255,0.1);
-            transition: transform 0.05s, box-shadow 0.05s, background 0.05s;
-        }
-        .btn-action.active-toggle { 
-            transform: scale(0.92) translateY(4px); background: var(--accent); color: #000;
-            box-shadow: 0 0 25px var(--accent), inset 0 5px 10px rgba(0,0,0,0.5); border-color: #fff;
-        }
-
-        /* Bottom Right Cluster */
-        .bottom-right-cluster {
-            position: fixed; bottom: 20px; right: 20px; display: flex; gap: 12px; z-index: 200;
-        }
-        .btn-icon {
-            background: rgba(255, 26, 64, 0.1); border: 1px solid var(--accent-dim);
-            color: var(--accent); font-size: 1.5rem; width: 50px; height: 50px; border-radius: 12px;
-            display: flex; justify-content: center; align-items: center; cursor: pointer;
-            box-shadow: 0 0 10px rgba(0,0,0,0.5);
-            transition: all 0.2s;
-        }
-        .btn-icon:active { background: var(--accent); color: #000; transform: scale(0.9); }
-
-        /* --- LANDSCAPE OVERRIDES --- */
-        @media (orientation: landscape) {
-            .header { padding: 5px 15px; }
-            .control-grid { flex-direction: row; justify-content: space-between; align-items: center; padding: 10px 20px; padding-bottom: 0; }
-            .left-thumb-zone { width: 30vw; height: 100%; order: 1; }
-            .telemetry-hud { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 140px; font-size: 0.9rem; margin: 0; }
-            .action-column { order: 3; margin-right: 6vw; }
-            .bottom-right-cluster { bottom: 15px; right: 15px; }
-            .btn-icon { width: 45px; height: 45px; }
-        }
-    </style>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
@@ -313,35 +96,46 @@
 
         const statusEl = document.getElementById('status'), telEl = document.getElementById('telemetryOut'), connBtn = document.getElementById('btnConnect');
 
+        // FUNGSI INI AKAN DIPANGGIL BILA TERPUTUS HUBUNGAN
+        function onDisconnected() {
+            isConnected = false; 
+            statusEl.innerText = "OFFLINE"; 
+            document.body.classList.remove('is-connected'); // Buang tema online
+            connBtn.innerText = "CONNECT"; 
+            telEl.classList.add('offline'); // Jadikan telemetry kelabu balik
+            telEl.innerText = "SEVERED";
+        }
+
         connBtn.addEventListener('click', async () => {
-            if (bleDevice?.gatt.connected) { bleDevice.gatt.disconnect(); return; }
+            // Jika sudah bersambung dan butang ditekan, putuskan sambungan
+            if (bleDevice?.gatt.connected) { 
+                bleDevice.gatt.disconnect(); 
+                return; 
+            }
+            
             try {
                 bleDevice = await navigator.bluetooth.requestDevice({
                     filters: [{ namePrefix: "BBC" }, { namePrefix: "micro:bit" }],
                     optionalServices: [UART_SERVICE_UUID]
                 });
+
+                // PENTING: Letak listener di sini, selepas bleDevice berjaya dipilih!
+                bleDevice.addEventListener('gattserverdisconnected', onDisconnected);
+
                 const server = await bleDevice.gatt.connect();
                 const service = await server.getPrimaryService(UART_SERVICE_UUID);
                 rxChar = await service.getCharacteristic(UART_RX_CHARACTERISTIC_UUID);
-                isConnected = true; 
                 
-                // KEMASKINI UI STATUS BERSAMBUNG
+                isConnected = true; 
                 statusEl.innerText = "ONLINE"; 
-                document.body.classList.add('is-connected'); // Pencetus tema visual online
+                document.body.classList.add('is-connected'); // Nyalakan tema merah
                 connBtn.innerText = "DISCONNECT"; 
+                telEl.classList.remove('offline'); // Nyalakan hud
                 
                 await send("mode_analog\n");
-            } catch (e) { console.error("BLE Connection Error:", e); }
-        });
-
-        bleDevice?.addEventListener('gattserverdisconnected', () => {
-            isConnected = false; 
-            
-            // KEMASKINI UI STATUS TERPUTUS
-            statusEl.innerText = "OFFLINE"; 
-            document.body.classList.remove('is-connected'); // Pencetus tema visual offline
-            connBtn.innerText = "CONNECT"; 
-            telEl.innerText = "SEVERED";
+            } catch (e) { 
+                console.error("BLE Connection Error:", e); 
+            }
         });
 
         let isWriting = false;
