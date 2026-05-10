@@ -196,6 +196,20 @@ const batteryRing  = document.getElementById('batteryRing');
 const connBtn      = document.getElementById('btnConnect');
 const reconnBtn    = document.getElementById('btnReconnect');
 
+// === Element references untuk battery panel ===
+const batteryPanel = document.getElementById('batteryPanel');
+const batteryPanelClose = document.getElementById('batteryPanelClose');
+const bpPercent = document.getElementById('bpPercent');
+const bpVoltage = document.getElementById('bpVoltage');
+const bpTrend = document.getElementById('bpTrend');
+const bpRange = document.getElementById('bpRange');
+const bpSparkLine = document.getElementById('bpSparkLine');
+const bpSparkArea = document.getElementById('bpSparkArea');
+
+// === Signal indicator ===
+const signalIndicator = document.getElementById('signalIndicator');
+const signalLabel = document.getElementById('signalLabel');
+
 // Lilitan cincin = 2π × radius (radius = 18, jadi keliling = 113.097)
 const RING_CIRCUMFERENCE = 2 * Math.PI * 18;
 
@@ -225,6 +239,174 @@ function setBatteryLevel(percent) {
     if (percent < 20) level = 'low';
     else if (percent < 50) level = 'mid';
     batteryPill.dataset.level = level;
+    batteryPanel.dataset.level = level;
+
+    // Kemaskini panel terperinci
+    bpPercent.textContent = Math.round(percent);
+    updateBatteryTrend(percent);
+}
+
+function setBatteryVoltage(volt) {
+    if (typeof volt !== 'number' || isNaN(volt)) return;
+    bpVoltage.textContent = volt.toFixed(2);
+    addVoltageReading(volt);
+}
+
+// === Sparkline & Voltage History ===
+const MAX_HISTORY = 30; // Simpan 30 bacaan terakhir
+const voltageHistory = [];
+let lastBatteryReading = null;
+let trendBuffer = [];
+
+function addVoltageReading(volt) {
+    voltageHistory.push(volt);
+    if (voltageHistory.length > MAX_HISTORY) {
+        voltageHistory.shift();
+    }
+    renderSparkline();
+    updateVoltageRange();
+}
+
+function renderSparkline() {
+    if (voltageHistory.length < 2) {
+        bpSparkLine.setAttribute('d', '');
+        bpSparkArea.setAttribute('d', '');
+        return;
+    }
+
+    const W = 300;
+    const H = 80;
+    const PAD = 4;
+    const min = Math.min(...voltageHistory);
+    const max = Math.max(...voltageHistory);
+    const range = max - min || 0.1;
+
+    const points = voltageHistory.map((v, i) => {
+        const x = PAD + (i / (MAX_HISTORY - 1)) * (W - PAD * 2);
+        const y = H - PAD - ((v - min) / range) * (H - PAD * 2);
+        return [x, y];
+    });
+
+    // Garis utama (smooth bezier)
+    let linePath = `M ${points[0][0]} ${points[0][1]}`;
+    for (let i = 1; i < points.length; i++) {
+        const prev = points[i - 1];
+        const curr = points[i];
+        const cpX = (prev[0] + curr[0]) / 2;
+        linePath += ` Q ${cpX} ${prev[1]} ${cpX} ${(prev[1] + curr[1]) / 2}`;
+        linePath += ` Q ${cpX} ${curr[1]} ${curr[0]} ${curr[1]}`;
+    }
+    bpSparkLine.setAttribute('d', linePath);
+
+    // Area di bawah garis (untuk gradient)
+    const areaPath = linePath +
+        ` L ${points[points.length - 1][0]} ${H}` +
+        ` L ${points[0][0]} ${H} Z`;
+    bpSparkArea.setAttribute('d', areaPath);
+}
+
+function updateVoltageRange() {
+    if (voltageHistory.length === 0) {
+        bpRange.textContent = '— V';
+        return;
+    }
+    const min = Math.min(...voltageHistory);
+    const max = Math.max(...voltageHistory);
+    bpRange.textContent = `${min.toFixed(2)} – ${max.toFixed(2)} V`;
+}
+
+function updateBatteryTrend(percent) {
+    trendBuffer.push(percent);
+    if (trendBuffer.length > 6) trendBuffer.shift();
+
+    if (trendBuffer.length < 3) {
+        bpTrend.textContent = '—';
+        bpTrend.className = 'bp-stat-value trend-stable';
+        return;
+    }
+
+    // Kira purata pertama dan terakhir untuk trend
+    const firstAvg = (trendBuffer[0] + trendBuffer[1]) / 2;
+    const lastAvg = (trendBuffer[trendBuffer.length - 1] + trendBuffer[trendBuffer.length - 2]) / 2;
+    const diff = lastAvg - firstAvg;
+
+    if (Math.abs(diff) < 1) {
+        bpTrend.textContent = 'stable';
+        bpTrend.className = 'bp-stat-value trend-stable';
+    } else if (diff > 0) {
+        bpTrend.textContent = '↑';
+        bpTrend.className = 'bp-stat-value trend-up';
+    } else {
+        bpTrend.textContent = '↓';
+        bpTrend.className = 'bp-stat-value trend-down';
+    }
+}
+
+// === Battery panel toggle ===
+batteryPill.addEventListener('click', () => {
+    haptic(15);
+    batteryPanel.hidden = !batteryPanel.hidden;
+});
+
+batteryPanelClose.addEventListener('click', () => {
+    haptic(15);
+    batteryPanel.hidden = true;
+});
+
+// Tutup panel kalau tap luar
+document.addEventListener('click', (e) => {
+    if (batteryPanel.hidden) return;
+    if (batteryPanel.contains(e.target)) return;
+    if (batteryPill.contains(e.target)) return;
+    batteryPanel.hidden = true;
+});
+
+
+// === Penunjuk Kekuatan Isyarat (berdasarkan latency) ===
+let pingHistory = [];
+let lastPingTime = 0;
+
+function recordLatency(ms) {
+    pingHistory.push(ms);
+    if (pingHistory.length > 5) pingHistory.shift();
+    updateSignalStrength();
+}
+
+function updateSignalStrength() {
+    if (pingHistory.length === 0) {
+        signalIndicator.hidden = true;
+        return;
+    }
+
+    const avg = pingHistory.reduce((a, b) => a + b, 0) / pingHistory.length;
+    let strength;
+    let label;
+
+    // Kira aras berdasarkan kependaman purata
+    // BLE biasa 20-50ms = excellent, 50-100 = good, 100-200 = fair, >200 = poor
+    if (avg < 60) {
+        strength = 4;
+        label = 'Excellent';
+    } else if (avg < 120) {
+        strength = 3;
+        label = 'Good';
+    } else if (avg < 250) {
+        strength = 2;
+        label = 'Fair';
+    } else {
+        strength = 1;
+        label = 'Poor';
+    }
+
+    signalIndicator.dataset.strength = String(strength);
+    signalLabel.textContent = `${Math.round(avg)}ms`;
+    signalIndicator.hidden = false;
+    signalIndicator.title = `${label} — ${Math.round(avg)}ms latency`;
+}
+
+function clearSignalStrength() {
+    pingHistory = [];
+    signalIndicator.hidden = true;
 }
 
 function updateConnectedUI(connected, deviceName) {
@@ -252,8 +434,43 @@ function onDisconnected() {
     txChar = null;
     updateConnectedUI(false);
     releaseWakeLock();
+    clearSignalStrength();
+    batteryPanel.hidden = true;
+    voltageHistory.length = 0;
+    trendBuffer.length = 0;
+    stopPingLoop();
     toast('Connection lost');
 }
+
+// === Ping loop untuk pengukuran latency ===
+let pingInterval = null;
+const PING_INTERVAL_MS = 3000;
+
+function startPingLoop() {
+    stopPingLoop();
+    pingInterval = setInterval(() => {
+        if (!isConnected || !rxChar) return;
+        if (lastPingTime > 0) return; // Masih tunggu pong sebelum
+        lastPingTime = Date.now();
+        send('ping\n');
+        // Timeout — kalau tiada respons dalam 1 saat, kira sebagai poor
+        setTimeout(() => {
+            if (lastPingTime > 0 && Date.now() - lastPingTime > 1000) {
+                recordLatency(1000);
+                lastPingTime = 0;
+            }
+        }, 1100);
+    }, PING_INTERVAL_MS);
+}
+
+function stopPingLoop() {
+    if (pingInterval) {
+        clearInterval(pingInterval);
+        pingInterval = null;
+    }
+    lastPingTime = 0;
+}
+
 
 async function connectToDevice(device) {
     bleDevice = device;
@@ -283,6 +500,9 @@ async function connectToDevice(device) {
     try { localStorage.setItem(STORAGE_KEY, device.name); } catch {}
 
     await send('mode_analog\n');
+    
+    // Mulakan ping loop untuk pengukuran kekuatan isyarat
+    startPingLoop();
 }
 
 connBtn.addEventListener('click', async () => {
@@ -379,6 +599,21 @@ function parseRxLine(line) {
             const num = parseFloat(value);
             debugLog('INFO', `Battery: ${num}%`);
             setBatteryLevel(num);
+            return;
+        }
+        if (key === 'volt' || key === 'voltage' || key === 'v') {
+            const num = parseFloat(value);
+            debugLog('INFO', `Voltage: ${num}V`);
+            setBatteryVoltage(num);
+            return;
+        }
+        if (key === 'pong') {
+            // Respons dari micro:bit untuk pengukuran latency
+            if (lastPingTime > 0) {
+                const latency = Date.now() - lastPingTime;
+                recordLatency(latency);
+                lastPingTime = 0;
+            }
             return;
         }
         setRxTelemetry(`${key}:${value}`);
