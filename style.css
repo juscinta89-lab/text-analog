@@ -276,7 +276,15 @@ body.is-connected .telemetry-mode .tel-value { color: var(--warning); }
     align-items: center;
     justify-content: center;
     transition: all var(--t-mid) var(--ease-out);
+    background: transparent;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
 }
+
+.battery-indicator:hover { transform: scale(1.05); }
+.battery-indicator:active { transform: scale(0.95); }
 
 .battery-indicator[hidden] { display: none; }
 
@@ -332,6 +340,216 @@ body.is-connected .telemetry-mode .tel-value { color: var(--warning); }
     0%, 100% { transform: scale(1); }
     50% { transform: scale(1.06); }
 }
+
+/* ---------- 6b. PENUNJUK KEKUATAN ISYARAT ---------- */
+.signal-indicator {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px 4px 8px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r-full);
+    box-shadow: var(--shadow-sm);
+    transition: all var(--t-mid) var(--ease-out);
+    color: var(--text-tertiary);
+}
+
+.signal-indicator[hidden] { display: none; }
+
+.signal-icon {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+}
+
+.signal-bar {
+    transition: opacity var(--t-mid) var(--ease-out);
+    opacity: 0.2;
+}
+
+/* Aras isyarat — kawal opasiti setiap bar */
+.signal-indicator[data-strength="1"] .signal-bar-1 { opacity: 1; }
+.signal-indicator[data-strength="2"] .signal-bar-1,
+.signal-indicator[data-strength="2"] .signal-bar-2 { opacity: 1; }
+.signal-indicator[data-strength="3"] .signal-bar-1,
+.signal-indicator[data-strength="3"] .signal-bar-2,
+.signal-indicator[data-strength="3"] .signal-bar-3 { opacity: 1; }
+.signal-indicator[data-strength="4"] .signal-bar { opacity: 1; }
+
+/* Warna mengikut kualiti */
+.signal-indicator[data-strength="1"] { color: var(--danger); }
+.signal-indicator[data-strength="2"] { color: var(--warning); }
+.signal-indicator[data-strength="3"] { color: var(--success); }
+.signal-indicator[data-strength="4"] { color: var(--success); }
+
+.signal-label {
+    font-size: 10px;
+    font-weight: 600;
+    font-feature-settings: "tnum";
+    letter-spacing: -0.02em;
+    color: var(--text-secondary);
+    min-width: 28px;
+}
+
+/* ---------- 6c. PANEL BATERI TERPERINCI ---------- */
+.battery-panel {
+    position: absolute;
+    top: calc(var(--dash-height) + 8px);
+    right: var(--space-5);
+    width: min(360px, calc(100vw - var(--space-5) * 2));
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r-lg);
+    box-shadow: var(--shadow-lg);
+    z-index: 50;
+    overflow: hidden;
+    transform-origin: top right;
+    animation: bp-enter var(--t-mid) var(--ease-spring);
+}
+
+.battery-panel[hidden] { display: none; }
+
+@keyframes bp-enter {
+    0% {
+        opacity: 0;
+        transform: scale(0.92) translateY(-8px);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.bp-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface-2);
+}
+
+.bp-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+    letter-spacing: -0.01em;
+}
+
+.bp-close {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--border);
+    color: var(--text-secondary);
+    font-size: 16px;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--t-fast) var(--ease-out);
+    border: none;
+    cursor: pointer;
+}
+.bp-close:hover {
+    background: var(--border-strong);
+    color: var(--text-primary);
+}
+
+.bp-body {
+    padding: 16px 18px;
+}
+
+.bp-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-3);
+    margin-bottom: var(--space-5);
+}
+
+.bp-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 10px 12px;
+    background: var(--bg);
+    border-radius: var(--r-md);
+    border: 1px solid var(--border);
+    position: relative;
+}
+
+.bp-stat-label {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-tertiary);
+    margin-bottom: 4px;
+}
+
+.bp-stat-value {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text-primary);
+    font-feature-settings: "tnum";
+    letter-spacing: -0.03em;
+    line-height: 1;
+}
+
+.bp-stat-unit {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-tertiary);
+    margin-top: 2px;
+}
+
+/* Trend nilai — boleh ada warna khas */
+.bp-stat-value.trend-up { color: var(--success); }
+.bp-stat-value.trend-down { color: var(--danger); }
+.bp-stat-value.trend-stable { color: var(--text-secondary); }
+
+/* Sparkline */
+.bp-graph {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--r-md);
+    padding: 12px 14px;
+}
+
+.bp-graph-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 8px;
+}
+
+.bp-graph-label {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--text-tertiary);
+    letter-spacing: 0.02em;
+}
+
+.bp-graph-range {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    font-feature-settings: "tnum";
+}
+
+.bp-sparkline {
+    width: 100%;
+    height: 80px;
+    color: var(--accent);
+    transition: color var(--t-mid) var(--ease-out);
+    overflow: visible;
+}
+
+/* Warna sparkline mengikut tahap bateri */
+.battery-panel[data-level="high"] .bp-sparkline { color: var(--success); }
+.battery-panel[data-level="mid"] .bp-sparkline { color: var(--warning); }
+.battery-panel[data-level="low"] .bp-sparkline { color: var(--danger); }
 
 /* ---------- 7. STATUS PILL ---------- */
 .status-pill {
