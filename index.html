@@ -13,59 +13,78 @@
 </head>
 <body>
 
-    <!-- ============ HEADER (Status Bar) ============ -->
-    <header class="topbar">
-        <div class="brand">
-            <span class="brand-name">microjoy</span>
-            <span class="brand-version">v1.3</span>
+    <!-- ============================================
+         DASHBOARD ATAS — Tiga zon utama
+         ============================================ -->
+    <header class="dashboard">
+
+        <div class="dash-zone dash-left">
+            <div class="brand">
+                <div class="brand-logo">
+                    <svg viewBox="0 0 32 32" fill="none">
+                        <circle cx="16" cy="16" r="14" stroke="currentColor" stroke-width="2"/>
+                        <circle cx="16" cy="16" r="5" fill="currentColor"/>
+                    </svg>
+                </div>
+                <div class="brand-text">
+                    <span class="brand-name">microjoy</span>
+                    <span class="brand-version">v1.4</span>
+                </div>
+            </div>
         </div>
 
-        <div class="connection">
+        <div class="dash-zone dash-center">
+            <div class="telemetry-stack" id="telemetryStack" data-visible="true">
+                <div class="telemetry-item telemetry-mode" id="telemetryMode" hidden>
+                    <span class="tel-label">MODE</span>
+                    <span class="tel-value" id="modeValue">analog</span>
+                </div>
+                <div class="telemetry-item telemetry-tx" id="telemetryOut">
+                    <span class="tel-label">TX</span>
+                    <span class="tel-value">awaiting</span>
+                </div>
+                <div class="telemetry-item telemetry-rx" id="telemetryIn" hidden>
+                    <span class="tel-label">RX</span>
+                    <span class="tel-value">—</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="dash-zone dash-right">
+
+            <div class="battery-indicator" id="batteryIndicator" hidden>
+                <svg class="battery-ring" viewBox="0 0 44 44">
+                    <circle class="battery-ring-bg" cx="22" cy="22" r="18"/>
+                    <circle class="battery-ring-fg" id="batteryRing" cx="22" cy="22" r="18"
+                            stroke-dasharray="113.097" stroke-dashoffset="113.097"/>
+                </svg>
+                <div class="battery-content">
+                    <span class="battery-percent" id="batteryValue">—</span>
+                </div>
+            </div>
+
             <div class="status-pill" id="statusPill">
                 <span class="status-dot"></span>
                 <span class="status-text" id="status">Offline</span>
             </div>
+
             <button class="btn-reconnect" id="btnReconnect" hidden aria-label="Reconnect to last device"></button>
             <button class="btn-primary" id="btnConnect">Connect</button>
         </div>
+
     </header>
 
-    <!-- ============ TELEMETRY DISPLAY ============ -->
-    <!--
-        Telemetry sekarang ada DUA bahagian:
-        1. Output kita (apa yang dihantar) — kekal seperti dahulu
-        2. Inbound (apa yang diterima dari micro:bit) — baru, untuk bidirectional
-    -->
-    <div class="telemetry-cluster">
-        <div class="telemetry telemetry-out" id="telemetryOut">
-            <span class="telemetry-label">TX</span>
-            <span class="telemetry-value">awaiting</span>
-        </div>
-        <div class="telemetry telemetry-in" id="telemetryIn" hidden>
-            <span class="telemetry-label">RX</span>
-            <span class="telemetry-value">—</span>
-        </div>
-        <div class="telemetry telemetry-battery" id="batteryIndicator" hidden>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14">
-                <rect x="2" y="7" width="16" height="10" rx="2"/>
-                <line x1="22" y1="11" x2="22" y2="13"/>
-            </svg>
-            <span class="telemetry-value" id="batteryValue">—</span>
-        </div>
-    </div>
-
-    <!-- ============ MAIN CONTROL AREA ============ -->
+    <!-- ============================================
+         KAWASAN KAWALAN UTAMA
+         ============================================ -->
     <main class="control-area">
 
-        <!-- LEFT: Joystick / D-Pad -->
         <section class="left-zone" aria-label="Movement controls">
-
             <div class="joystick" id="joystickHitbox">
                 <div class="joystick-base" id="joystickBase">
                     <div class="joystick-thumb" id="thumbstick"></div>
                 </div>
             </div>
-
             <div class="dpad" id="dpadZone" aria-hidden="true">
                 <button class="dpad-btn dpad-up" id="btnUp" aria-label="Up">
                     <svg viewBox="0 0 24 24" fill="none"><path d="M12 5l-7 7h4v7h6v-7h4z" fill="currentColor"/></svg>
@@ -80,10 +99,8 @@
                     <svg viewBox="0 0 24 24" fill="none"><path d="M5 12l7 7v-4h7v-6h-7V5z" fill="currentColor"/></svg>
                 </button>
             </div>
-
         </section>
 
-        <!-- RIGHT: Action Buttons -->
         <section class="right-zone" aria-label="Action buttons">
             <button class="btn-action btn-a" id="btnA" aria-label="Button A">A</button>
             <button class="btn-action btn-b" id="btnB" aria-label="Button B">B</button>
@@ -91,8 +108,17 @@
 
     </main>
 
-    <!-- ============ UTILITY CLUSTER (Bottom Right) ============ -->
+    <!-- ============================================
+         CLUSTER UTILITI (Bawah kanan)
+         ============================================ -->
     <div class="util-cluster">
+        <button class="btn-util" id="btnToggleTelemetry" aria-label="Toggle telemetry display" title="Show/hide telemetry">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="12" y1="16" x2="12" y2="12"/>
+                <line x1="12" y1="8" x2="12.01" y2="8"/>
+            </svg>
+        </button>
         <button class="btn-util" id="btnToggleMode" aria-label="Toggle joystick or D-pad mode" title="Switch input mode">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="12" cy="12" r="3"/>
@@ -106,10 +132,11 @@
         </button>
     </div>
 
-    <!-- ============ TOAST (Error Messages) ============ -->
+    <!-- ============================================
+         TOAST & DEBUG PANEL
+         ============================================ -->
     <div class="toast" id="toast" role="alert" aria-live="polite"></div>
 
-    <!-- ============ DEBUG PANEL (Triple-tap brand untuk toggle) ============ -->
     <div class="debug-panel" id="debugPanel" hidden>
         <div class="debug-header">
             <span class="debug-title">DEBUG LOG</span>
