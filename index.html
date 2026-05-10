@@ -75,16 +75,51 @@
                 </div>
             </button>
 
-            <div class="status-pill" id="statusPill">
+            <button class="status-pill" id="statusPill" aria-label="Connection menu" title="Tap to switch device">
                 <span class="status-dot"></span>
                 <span class="status-text" id="status">Offline</span>
-            </div>
+            </button>
 
             <button class="btn-reconnect" id="btnReconnect" hidden aria-label="Reconnect to last device"></button>
             <button class="btn-primary" id="btnConnect">Connect</button>
         </div>
 
     </header>
+
+    <!-- ============================================
+         MENU SAMBUNGAN
+         (Muncul apabila status pill diketuk)
+         ============================================ -->
+    <div class="connection-menu" id="connectionMenu" hidden>
+        <div class="cm-header">
+            <span class="cm-title">Connection</span>
+            <button class="cm-close" id="connectionMenuClose" aria-label="Close">×</button>
+        </div>
+        <div class="cm-body">
+            <div class="cm-current" id="cmCurrent">
+                <span class="cm-current-label">Connected to</span>
+                <span class="cm-current-name" id="cmCurrentName">—</span>
+            </div>
+            <button class="cm-action cm-action-switch" id="cmSwitch">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M16 3h5v5M4 20L21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/>
+                </svg>
+                <div class="cm-action-text">
+                    <span class="cm-action-title">Switch to another robot</span>
+                    <span class="cm-action-desc">Disconnect and choose new device</span>
+                </div>
+            </button>
+            <button class="cm-action cm-action-disconnect" id="cmDisconnect">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M18.36 6.64a9 9 0 1 1-12.73 0M12 2v10"/>
+                </svg>
+                <div class="cm-action-text">
+                    <span class="cm-action-title">Disconnect</span>
+                    <span class="cm-action-desc">End current session</span>
+                </div>
+            </button>
+        </div>
+    </div>
 
     <!-- ============================================
          PANEL BATERI TERPERINCI
