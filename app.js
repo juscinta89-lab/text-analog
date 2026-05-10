@@ -210,6 +210,14 @@ const bpSparkArea = document.getElementById('bpSparkArea');
 const signalIndicator = document.getElementById('signalIndicator');
 const signalLabel = document.getElementById('signalLabel');
 
+// === Connection menu ===
+const statusPill = document.getElementById('statusPill');
+const connectionMenu = document.getElementById('connectionMenu');
+const connectionMenuClose = document.getElementById('connectionMenuClose');
+const cmCurrentName = document.getElementById('cmCurrentName');
+const cmSwitch = document.getElementById('cmSwitch');
+const cmDisconnect = document.getElementById('cmDisconnect');
+
 // Lilitan cincin = 2π × radius (radius = 18, jadi keliling = 113.097)
 const RING_CIRCUMFERENCE = 2 * Math.PI * 18;
 
@@ -409,6 +417,80 @@ function clearSignalStrength() {
     signalIndicator.hidden = true;
 }
 
+
+// === Menu Sambungan ===
+// Status pill berfungsi sebagai butang menu apabila telah bersambung.
+// Pengguna boleh tukar robot atau memutuskan sambungan dengan mudah.
+statusPill.addEventListener('click', () => {
+    if (!isConnected) return; // Hanya berfungsi apabila telah bersambung
+    haptic(15);
+    connectionMenu.hidden = !connectionMenu.hidden;
+    if (!connectionMenu.hidden) {
+        cmCurrentName.textContent = bleDevice?.name || 'Unknown device';
+    }
+});
+
+connectionMenuClose.addEventListener('click', () => {
+    haptic(15);
+    connectionMenu.hidden = true;
+});
+
+// Tutup menu apabila tap luar
+document.addEventListener('click', (e) => {
+    if (connectionMenu.hidden) return;
+    if (connectionMenu.contains(e.target)) return;
+    if (statusPill.contains(e.target)) return;
+    connectionMenu.hidden = true;
+});
+
+// Tukar ke robot lain dalam satu langkah
+cmSwitch.addEventListener('click', async () => {
+    haptic(15);
+    connectionMenu.hidden = true;
+    
+    // Putuskan sambungan semasa dahulu
+    if (bleDevice?.gatt.connected) {
+        bleDevice.gatt.disconnect();
+    }
+    
+    // Beri masa untuk disconnect selesai sepenuhnya
+    await new Promise(resolve => setTimeout(resolve, 300));
+    
+    // Buka dialog pemilihan peranti baharu
+    if (!navigator.bluetooth) {
+        toast('Web Bluetooth not supported');
+        return;
+    }
+    
+    try {
+        connBtn.textContent = 'Scanning…';
+        const device = await navigator.bluetooth.requestDevice({
+            filters: [
+                { namePrefix: 'BBC' },
+                { namePrefix: 'micro:bit' },
+            ],
+            optionalServices: [UART_SERVICE_UUID],
+        });
+        await connectToDevice(device);
+    } catch (err) {
+        connBtn.textContent = 'Connect';
+        if (err.name === 'NotFoundError') {
+            toast('No device selected');
+        } else {
+            toast('Error: ' + (err.message || err.name));
+        }
+    }
+});
+
+// Putuskan sambungan
+cmDisconnect.addEventListener('click', () => {
+    haptic(15);
+    connectionMenu.hidden = true;
+    if (bleDevice?.gatt.connected) {
+        bleDevice.gatt.disconnect();
+    }
+});
+
 function updateConnectedUI(connected, deviceName) {
     isConnected = connected;
     if (connected) {
@@ -436,6 +518,7 @@ function onDisconnected() {
     releaseWakeLock();
     clearSignalStrength();
     batteryPanel.hidden = true;
+    connectionMenu.hidden = true;
     voltageHistory.length = 0;
     trendBuffer.length = 0;
     stopPingLoop();
