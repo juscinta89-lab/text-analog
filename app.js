@@ -1,20 +1,5 @@
 /* =====================================================
-   MICROJOY — app.js v2 (Sales Edition)
-   Bahagian-bahagian:
-     §1  Haptic
-     §2  Toast notifications
-     §3  Mode toggle (joystick ↔ d-pad)
-     §4  Fullscreen
-     §5  Wake Lock                                    ← BARU
-     §6  BLE: Connect, Disconnect, Auto-reconnect    ← BARU (auto-reconnect)
-     §7  BLE: TX (incoming data dari micro:bit)      ← BARU (bidirectional)
-     §8  Send pipeline (with backpressure)
-     §9  Joystick engine
-     §10 D-pad engine
-     §11 Action buttons (A / B)
-     §12 Keyboard support (state-driven, unified)
-     §13 Service worker
-     §14 Visibility/lifecycle handling
+   MICROJOY v1.4 — app.js (Dashboard Edition)
    ===================================================== */
 
 
@@ -36,8 +21,6 @@ function toast(msg, duration = 2400) {
 
 
 // ===== §2b. DEBUG PANEL =====
-// Panel debug yang menunjukkan setiap mesej yang dihantar dan diterima.
-// Toggle dengan ketuk label brand 3 kali (triple-tap).
 const debugPanel = document.getElementById('debugPanel');
 const debugContent = document.getElementById('debugContent');
 const MAX_DEBUG_LINES = 100;
@@ -61,7 +44,6 @@ function escapeHtml(s) {
     return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 
-// Triple-tap pada brand untuk toggle panel
 const brandEl = document.querySelector('.brand');
 let tapCount = 0;
 let tapTimer = null;
@@ -90,11 +72,46 @@ document.getElementById('debugClose')?.addEventListener('click', () => {
 });
 
 
-// ===== §3. MODE TOGGLE =====
+// ===== §3. TOGGLE TELEMETRI =====
+// Pengguna boleh sembunyikan paparan telemetri untuk view yang lebih bersih
+const TELEMETRY_VISIBLE_KEY = 'microjoy.telemetryVisible';
+const telemetryStack = document.getElementById('telemetryStack');
+const btnToggleTelemetry = document.getElementById('btnToggleTelemetry');
+
+let telemetryVisible = true;
+try {
+    const saved = localStorage.getItem(TELEMETRY_VISIBLE_KEY);
+    if (saved !== null) telemetryVisible = saved === 'true';
+} catch {}
+
+function applyTelemetryVisibility() {
+    telemetryStack.dataset.visible = String(telemetryVisible);
+    btnToggleTelemetry.classList.toggle('active', telemetryVisible);
+    try { localStorage.setItem(TELEMETRY_VISIBLE_KEY, String(telemetryVisible)); } catch {}
+}
+
+btnToggleTelemetry.addEventListener('click', () => {
+    telemetryVisible = !telemetryVisible;
+    haptic(15);
+    applyTelemetryVisibility();
+    toast(telemetryVisible ? 'Telemetry ON' : 'Telemetry OFF');
+});
+
+applyTelemetryVisibility();
+
+
+// ===== §4. MODE TOGGLE (Joystick / D-Pad) =====
 let isDpadMode = false;
 const btnToggle = document.getElementById('btnToggleMode');
 const joyHitbox = document.getElementById('joystickHitbox');
 const dpZone   = document.getElementById('dpadZone');
+const telemetryMode = document.getElementById('telemetryMode');
+const modeValue = document.getElementById('modeValue');
+
+function updateModeIndicator(mode) {
+    telemetryMode.hidden = false;
+    modeValue.textContent = mode;
+}
 
 btnToggle.addEventListener('click', () => {
     isDpadMode = !isDpadMode;
@@ -103,10 +120,12 @@ btnToggle.addEventListener('click', () => {
         joyHitbox.style.display = 'none';
         dpZone.style.display = 'block';
         toast('D-pad mode');
+        updateModeIndicator('dpad');
     } else {
         joyHitbox.style.display = 'flex';
         dpZone.style.display = 'none';
         toast('Joystick mode');
+        updateModeIndicator('analog');
     }
     cX = 0; cY = 0;
     keyState.up = keyState.down = keyState.left = keyState.right = false;
@@ -114,7 +133,7 @@ btnToggle.addEventListener('click', () => {
 });
 
 
-// ===== §4. FULLSCREEN =====
+// ===== §5. FULLSCREEN =====
 const btnFs = document.getElementById('btnFullscreen');
 btnFs.addEventListener('click', async () => {
     try {
@@ -133,24 +152,15 @@ btnFs.addEventListener('click', async () => {
 });
 
 
-// ===== §5. WAKE LOCK =====
-/*
-    Wake lock = mintak browser jangan tidurkan skrin.
-    Pelepasan automatik bila tab tak active — kena minta semula bila visible.
-    API: navigator.wakeLock.request('screen')
-    Support: Chrome/Edge desktop & Android, Safari iOS 16.4+
-*/
+// ===== §6. WAKE LOCK =====
 let wakeLock = null;
 
 async function requestWakeLock() {
     if (!('wakeLock' in navigator)) return;
     try {
         wakeLock = await navigator.wakeLock.request('screen');
-        wakeLock.addEventListener('release', () => {
-            // Sentinel released — bukan masalah, biasa berlaku bila tab background
-        });
+        wakeLock.addEventListener('release', () => {});
     } catch (err) {
-        // Mungkin gagal dalam mod private browsing atau bila batteri rendah
         console.warn('Wake lock failed:', err);
     }
 }
@@ -163,10 +173,10 @@ function releaseWakeLock() {
 }
 
 
-// ===== §6. BLE: Connect, Disconnect, Auto-reconnect =====
+// ===== §7. BLE: Connect, Disconnect, Auto-reconnect =====
 const UART_SERVICE_UUID = '6e400001-b5a3-f393-e0a9-e50e24dcca9e';
-const UART_RX_CHAR_UUID = '6e400003-b5a3-f393-e0a9-e50e24dcca9e';  // Phone → micro:bit
-const UART_TX_CHAR_UUID = '6e400002-b5a3-f393-e0a9-e50e24dcca9e';  // micro:bit → Phone
+const UART_RX_CHAR_UUID = '6e400003-b5a3-f393-e0a9-e50e24dcca9e';
+const UART_TX_CHAR_UUID = '6e400002-b5a3-f393-e0a9-e50e24dcca9e';
 
 const STORAGE_KEY = 'microjoy.lastDeviceName';
 
@@ -177,17 +187,22 @@ let isConnected = false;
 
 const statusEl     = document.getElementById('status');
 const telOut       = document.getElementById('telemetryOut');
-const telOutValue  = telOut.querySelector('.telemetry-value');
+const telOutValue  = telOut.querySelector('.tel-value');
 const telIn        = document.getElementById('telemetryIn');
-const telInValue   = telIn.querySelector('.telemetry-value');
+const telInValue   = telIn.querySelector('.tel-value');
 const batteryPill  = document.getElementById('batteryIndicator');
 const batteryValue = document.getElementById('batteryValue');
+const batteryRing  = document.getElementById('batteryRing');
 const connBtn      = document.getElementById('btnConnect');
 const reconnBtn    = document.getElementById('btnReconnect');
+
+// Lilitan cincin = 2π × radius (radius = 18, jadi keliling = 113.097)
+const RING_CIRCUMFERENCE = 2 * Math.PI * 18;
 
 function setTxTelemetry(text) {
     if (telOutValue) telOutValue.textContent = text;
 }
+
 function setRxTelemetry(text) {
     if (telInValue) telInValue.textContent = text;
     telIn.hidden = false;
@@ -196,8 +211,16 @@ function setRxTelemetry(text) {
 function setBatteryLevel(percent) {
     if (typeof percent !== 'number' || isNaN(percent)) return;
     percent = Math.max(0, Math.min(100, percent));
-    batteryValue.textContent = `${Math.round(percent)}%`;
+
+    // Kemaskini teks peratus
+    batteryValue.textContent = `${Math.round(percent)}`;
     batteryPill.hidden = false;
+
+    // Kemaskini cincin progress
+    const offset = RING_CIRCUMFERENCE - (percent / 100) * RING_CIRCUMFERENCE;
+    batteryRing.style.strokeDashoffset = offset;
+
+    // Tetapkan tahap (warna)
     let level = 'high';
     if (percent < 20) level = 'low';
     else if (percent < 50) level = 'mid';
@@ -207,19 +230,20 @@ function setBatteryLevel(percent) {
 function updateConnectedUI(connected, deviceName) {
     isConnected = connected;
     if (connected) {
-        statusEl.textContent = deviceName ? `Online · ${deviceName}` : 'Online';
+        statusEl.textContent = deviceName ? `${deviceName}` : 'Connected';
         document.body.classList.add('is-connected');
         connBtn.textContent = 'Disconnect';
         reconnBtn.hidden = true;
         setTxTelemetry('ready');
+        updateModeIndicator(isDpadMode ? 'dpad' : 'analog');
     } else {
         statusEl.textContent = 'Offline';
         document.body.classList.remove('is-connected');
         connBtn.textContent = 'Connect';
         setTxTelemetry('disconnected');
-        // Sembunyikan inbound pills (data tak relevan bila offline)
         telIn.hidden = true;
         batteryPill.hidden = true;
+        telemetryMode.hidden = true;
     }
 }
 
@@ -239,10 +263,8 @@ async function connectToDevice(device) {
     const server  = await device.gatt.connect();
     const service = await server.getPrimaryService(UART_SERVICE_UUID);
 
-    // Setup RX (kita hantar)
     rxChar = await service.getCharacteristic(UART_RX_CHAR_UUID);
 
-    // Setup TX (kita terima) — wrapped in try/catch sebab device tertentu mungkin tak support
     try {
         txChar = await service.getCharacteristic(UART_TX_CHAR_UUID);
         txChar.addEventListener('characteristicvaluechanged', handleIncomingData);
@@ -258,7 +280,6 @@ async function connectToDevice(device) {
     requestWakeLock();
     toast('Connected');
 
-    // Simpan nama untuk reconnect
     try { localStorage.setItem(STORAGE_KEY, device.name); } catch {}
 
     await send('mode_analog\n');
@@ -296,14 +317,8 @@ connBtn.addEventListener('click', async () => {
     }
 });
 
-// === Auto-reconnect: cek devices yang user pernah benarkan ===
-/*
-    navigator.bluetooth.getDevices() return devices yang user pernah pair
-    dalam masa lepas (chrome://bluetooth-internals untuk debug).
-    Browser tak benarkan auto-connect — user kena click sekali (security).
-*/
 async function checkSavedDevice() {
-    if (!navigator.bluetooth?.getDevices) return; // Older browsers tak support
+    if (!navigator.bluetooth?.getDevices) return;
 
     let savedName = null;
     try { savedName = localStorage.getItem(STORAGE_KEY); } catch {}
@@ -312,11 +327,10 @@ async function checkSavedDevice() {
         const devices = await navigator.bluetooth.getDevices();
         if (devices.length === 0) return;
 
-        // Cari device yang match nama yang disimpan, atau ambil first available
         const target = devices.find(d => d.name === savedName) || devices[0];
         if (!target) return;
 
-        reconnBtn.textContent = `Reconnect ${target.name || 'device'}`;
+        reconnBtn.textContent = `Reconnect`;
         reconnBtn.hidden = false;
         reconnBtn.onclick = async () => {
             try {
@@ -327,27 +341,16 @@ async function checkSavedDevice() {
                 toast('Reconnect failed — try Connect');
                 console.error(err);
                 reconnBtn.disabled = false;
-                reconnBtn.textContent = `Reconnect ${target.name || 'device'}`;
+                reconnBtn.textContent = `Reconnect`;
             }
         };
     } catch (err) {
-        // Kalau getDevices gagal, ignore senyap-senyap (bukan error kritikal)
         console.warn('getDevices() failed:', err);
     }
 }
 
 
-// ===== §7. BLE: Inbound (TX) — terima data dari micro:bit =====
-/*
-    Format yang kita expect dari micro:bit (boleh customize):
-        "battery:78"     → battery 78%
-        "dist:12.5"      → distance sensor 12.5
-        "temp:24"        → temperature 24°C
-        sebarang string lain → tunjuk dalam RX pill
-    micro:bit MakeCode contoh:
-        bluetooth.uart_write_string("battery:" + battery_level + "\n")
-*/
-
+// ===== §8. INBOUND UART =====
 let rxBuffer = '';
 
 function handleIncomingData(event) {
@@ -374,7 +377,7 @@ function parseRxLine(line) {
 
         if (key === 'battery' || key === 'bat') {
             const num = parseFloat(value);
-            debugLog('INFO', `Battery parsed: ${num}%`);
+            debugLog('INFO', `Battery: ${num}%`);
             setBatteryLevel(num);
             return;
         }
@@ -385,7 +388,7 @@ function parseRxLine(line) {
 }
 
 
-// ===== §8. SEND PIPELINE (backpressure-safe) =====
+// ===== §9. SEND PIPELINE =====
 let cX = 0, cY = 0;
 let lX, lY;
 let isWriting = false;
@@ -425,7 +428,7 @@ function forceKineticUpdate() {
 }
 
 
-// ===== §9. JOYSTICK ENGINE =====
+// ===== §10. JOYSTICK ENGINE =====
 const base  = document.getElementById('joystickBase');
 const thumb = document.getElementById('thumbstick');
 
@@ -500,7 +503,7 @@ joyHitbox.addEventListener('pointerup', resetJoystick);
 joyHitbox.addEventListener('pointercancel', resetJoystick);
 
 
-// ===== §10. D-PAD ENGINE =====
+// ===== §11. D-PAD ENGINE =====
 function bindDpad(id, axis, val) {
     const el = document.getElementById(id);
     let pid = null;
@@ -530,7 +533,7 @@ bindDpad('btnLeft',  'x', -90);
 bindDpad('btnRight', 'x',  90);
 
 
-// ===== §11. ACTION BUTTONS =====
+// ===== §12. ACTION BUTTONS =====
 function bindAction(id, char) {
     const el = document.getElementById(id);
     let pid = null;
@@ -554,7 +557,7 @@ bindAction('btnA', 'a');
 bindAction('btnB', 'b');
 
 
-// ===== §12. KEYBOARD (UNIFIED, state-driven) =====
+// ===== §13. KEYBOARD =====
 const keyState = { up: false, down: false, left: false, right: false };
 const pressedActions = new Set();
 
@@ -641,7 +644,7 @@ window.addEventListener('blur', () => {
 });
 
 
-// ===== §13. SERVICE WORKER =====
+// ===== §14. SERVICE WORKER =====
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
         navigator.serviceWorker.register('sw.js').catch(() => {});
@@ -649,18 +652,11 @@ if ('serviceWorker' in navigator) {
 }
 
 
-// ===== §14. VISIBILITY / LIFECYCLE =====
-/*
-    Bila tab balik visible:
-      - Re-request wake lock kalau dah connected (sebab wake lock dilepaskan auto)
-    Bila tab jadi hidden:
-      - Hentikan input ke micro:bit (elak "stuck input" bila user switch app)
-*/
+// ===== §15. VISIBILITY =====
 document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible') {
         if (isConnected) requestWakeLock();
     } else {
-        // Hentikan robot bila app keluar focus — safety first
         if (isConnected) {
             cX = 0; cY = 0;
             keyState.up = keyState.down = keyState.left = keyState.right = false;
@@ -671,5 +667,4 @@ document.addEventListener('visibilitychange', () => {
 
 
 // ===== INIT =====
-// Cek device tersimpan bila app load — tunjuk butang reconnect kalau ada
 checkSavedDevice();
