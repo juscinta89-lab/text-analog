@@ -28,7 +28,7 @@
                 </div>
                 <div class="brand-text">
                     <span class="brand-name">microjoy</span>
-                    <span class="brand-version">v1.4</span>
+                    <span class="brand-version">v1.5</span>
                 </div>
             </div>
         </div>
@@ -52,7 +52,19 @@
 
         <div class="dash-zone dash-right">
 
-            <div class="battery-indicator" id="batteryIndicator" hidden>
+            <!-- Penunjuk Kekuatan Isyarat -->
+            <div class="signal-indicator" id="signalIndicator" hidden title="Connection quality">
+                <svg class="signal-icon" viewBox="0 0 24 24" fill="none">
+                    <rect class="signal-bar signal-bar-1" x="3" y="16" width="3" height="5" rx="1" fill="currentColor"/>
+                    <rect class="signal-bar signal-bar-2" x="9" y="12" width="3" height="9" rx="1" fill="currentColor"/>
+                    <rect class="signal-bar signal-bar-3" x="15" y="7" width="3" height="14" rx="1" fill="currentColor"/>
+                    <rect class="signal-bar signal-bar-4" x="21" y="3" width="0" height="0" rx="1" fill="currentColor"/>
+                </svg>
+                <span class="signal-label" id="signalLabel">—</span>
+            </div>
+
+            <!-- Indikator Bateri (cincin progress, klik untuk maklumat lanjut) -->
+            <button class="battery-indicator" id="batteryIndicator" hidden aria-label="Battery details" title="Tap for details">
                 <svg class="battery-ring" viewBox="0 0 44 44">
                     <circle class="battery-ring-bg" cx="22" cy="22" r="18"/>
                     <circle class="battery-ring-fg" id="batteryRing" cx="22" cy="22" r="18"
@@ -61,7 +73,7 @@
                 <div class="battery-content">
                     <span class="battery-percent" id="batteryValue">—</span>
                 </div>
-            </div>
+            </button>
 
             <div class="status-pill" id="statusPill">
                 <span class="status-dot"></span>
@@ -73,6 +85,57 @@
         </div>
 
     </header>
+
+    <!-- ============================================
+         PANEL BATERI TERPERINCI
+         (Muncul apabila pengguna sentuh indikator bateri)
+         ============================================ -->
+    <div class="battery-panel" id="batteryPanel" hidden>
+        <div class="bp-header">
+            <span class="bp-title">Battery Status</span>
+            <button class="bp-close" id="batteryPanelClose" aria-label="Close">×</button>
+        </div>
+
+        <div class="bp-body">
+
+            <!-- Statistik utama dalam grid -->
+            <div class="bp-stats">
+                <div class="bp-stat">
+                    <span class="bp-stat-label">Charge</span>
+                    <span class="bp-stat-value" id="bpPercent">—</span>
+                    <span class="bp-stat-unit">%</span>
+                </div>
+                <div class="bp-stat">
+                    <span class="bp-stat-label">Voltage</span>
+                    <span class="bp-stat-value" id="bpVoltage">—</span>
+                    <span class="bp-stat-unit">V</span>
+                </div>
+                <div class="bp-stat">
+                    <span class="bp-stat-label">Trend</span>
+                    <span class="bp-stat-value" id="bpTrend">—</span>
+                </div>
+            </div>
+
+            <!-- Sparkline graf voltan -->
+            <div class="bp-graph">
+                <div class="bp-graph-header">
+                    <span class="bp-graph-label">Voltage history (last 60s)</span>
+                    <span class="bp-graph-range" id="bpRange">— V</span>
+                </div>
+                <svg class="bp-sparkline" id="bpSparkline" viewBox="0 0 300 80" preserveAspectRatio="none">
+                    <defs>
+                        <linearGradient id="sparkGradient" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stop-color="currentColor" stop-opacity="0.25"/>
+                            <stop offset="100%" stop-color="currentColor" stop-opacity="0"/>
+                        </linearGradient>
+                    </defs>
+                    <path id="bpSparkArea" d="" fill="url(#sparkGradient)"/>
+                    <path id="bpSparkLine" d="" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </div>
+
+        </div>
+    </div>
 
     <!-- ============================================
          KAWASAN KAWALAN UTAMA
