@@ -1,166 +1,503 @@
-/* --- style.css (PS4/PS5 ERGONOMIC LAYOUT) --- */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@700&display=swap');
+/* =====================================================
+   MICROJOY — Apple-minimalist edition
+   Design tokens, typography, layout, components.
+   ===================================================== */
 
+/* ---------- 1. DESIGN TOKENS ---------- */
 :root {
-    --bg-color: #080808;
-    --panel-bg: rgba(18, 18, 20, 0.85);
-    --accent: #fc304e;        
-    --accent-dim: #3b0a14;    
-    --success: #10b981;       
-    --text-main: #f3f4f6;
-    --text-muted: #9ca3af;
+    /* Neutral palette (light by default; dark mode overrides below) */
+    --bg: #f5f5f7;
+    --surface: #ffffff;
+    --surface-elevated: #ffffff;
+    --border: rgba(0, 0, 0, 0.08);
+    --border-strong: rgba(0, 0, 0, 0.14);
+
+    --text-primary: #1d1d1f;
+    --text-secondary: #6e6e73;
+    --text-tertiary: #a1a1a6;
+
+    /* Accent — warna tunggal, guna untuk action & connection */
+    --accent: #0071e3;
+    --accent-hover: #0077ed;
+    --accent-soft: rgba(0, 113, 227, 0.1);
+
+    /* Status colours */
+    --success: #30d158;
+    --danger: #ff3b30;
+    --warning: #ff9500;
+
+    /* Action button colors (subtle, bukan loud) */
+    --btn-a-bg: #34c759;
+    --btn-a-text: #ffffff;
+    --btn-b-bg: #ff453a;
+    --btn-b-text: #ffffff;
+
+    /* Shadow system — soft layering */
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.06);
+    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.04), 0 10px 15px rgba(0, 0, 0, 0.06);
+    --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.08), 0 20px 50px rgba(0, 0, 0, 0.1);
+    --shadow-inset: inset 0 1px 2px rgba(0, 0, 0, 0.06);
+
+    /* Spacing scale (4px-based) */
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 12px;
+    --space-4: 16px;
+    --space-5: 20px;
+    --space-6: 24px;
+    --space-8: 32px;
+
+    /* Radius scale */
+    --r-sm: 8px;
+    --r-md: 12px;
+    --r-lg: 18px;
+    --r-xl: 24px;
+    --r-full: 999px;
+
+    /* Motion */
+    --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+    --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+    --t-fast: 120ms;
+    --t-mid: 220ms;
+    --t-slow: 380ms;
 }
 
-* { 
-    box-sizing: border-box; 
-    font-family: 'Inter', sans-serif; 
-    user-select: none; 
-    -webkit-user-select: none; 
-    -webkit-tap-highlight-color: transparent;
+/* ---------- Dark mode auto ---------- */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --bg: #000000;
+        --surface: #1c1c1e;
+        --surface-elevated: #2c2c2e;
+        --border: rgba(255, 255, 255, 0.08);
+        --border-strong: rgba(255, 255, 255, 0.16);
+
+        --text-primary: #f5f5f7;
+        --text-secondary: #98989d;
+        --text-tertiary: #636366;
+
+        --accent: #0a84ff;
+        --accent-hover: #409cff;
+        --accent-soft: rgba(10, 132, 255, 0.18);
+
+        --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+        --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5);
+        --shadow-lg: 0 20px 40px rgba(0, 0, 0, 0.6);
+        --shadow-inset: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    }
 }
+
+/* ---------- 2. RESET & BASE ---------- */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 html, body {
-    margin: 0; padding: 0;
-    width: 100%; height: 100dvh;
-    background-color: var(--bg-color);
-    background-image: radial-gradient(circle at 50% 0%, #1a0a0c 0%, transparent 60%);
-    color: var(--text-main);
+    width: 100%;
+    height: 100%;
+    height: 100dvh;
+    overscroll-behavior: none;
     overflow: hidden;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-user-select: none;
+    user-select: none;
     touch-action: none;
-    display: flex; flex-direction: column;
 }
 
-/* --- HEADER --- */
-.header {
-    padding: 12px 20px; 
-    background: var(--panel-bg);
-    backdrop-filter: blur(10px);
-    border-bottom: 1px solid var(--accent-dim);
-    display: flex; justify-content: space-between; align-items: center;
-    z-index: 100;
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display",
+                 "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 14px;
+    line-height: 1.4;
+    color: var(--text-primary);
+    background: var(--bg);
+    background-image:
+        radial-gradient(ellipse 80% 50% at 20% 0%, var(--accent-soft), transparent 60%),
+        radial-gradient(ellipse 60% 40% at 80% 100%, var(--accent-soft), transparent 60%);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    letter-spacing: -0.01em;
+    position: fixed;
+    inset: 0;
 }
 
-.brand-line { font-weight: 700; color: var(--accent); letter-spacing: 1px; font-size: 0.9rem; }
-.status-container { display: flex; align-items: center; gap: 8px; }
-.status-dot { width: 8px; height: 8px; border-radius: 50%; background-color: #333; }
-body.is-connected .status-dot { background-color: var(--success); box-shadow: 0 0 8px var(--success); }
-
-.btn-connect {
-    background: rgba(252, 48, 78, 0.1); color: var(--accent); border: 1px solid var(--accent); 
-    padding: 6px 12px; border-radius: 4px; font-size: 0.7rem; font-weight: 700; cursor: pointer;
+button {
+    font-family: inherit;
+    font-size: inherit;
+    color: inherit;
+    background: none;
+    border: none;
+    cursor: pointer;
+    touch-action: none;
 }
 
-/* --- TELEMETRY (CENTER TOP) --- */
-.telemetry-hud {
+/* ---------- 3. HEADER (Top Bar) ---------- */
+.topbar {
     position: absolute;
-    top: 80px; left: 50%;
-    transform: translateX(-50%);
-    background: rgba(10, 10, 12, 0.8); 
-    border: 1px solid var(--accent-dim);
-    padding: 8px 20px; border-radius: 20px;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 1rem; color: var(--accent);
-    box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+    top: 0; left: 0; right: 0;
+    height: 56px;
+    padding: 0 var(--space-5);
+    padding-top: env(safe-area-inset-top);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
     z-index: 10;
-    pointer-events: none;
 }
 
-/* --- MAIN CONTROL GRID (PS4 STYLE) --- */
-.control-grid {
-    flex: 1; 
-    display: flex; 
-    flex-direction: row; /* Selalu row untuk landscape */
-    justify-content: space-between; /* Tolak satu ke kiri, satu ke kanan */
-    align-items: flex-end; /* Letak di bahagian bawah skrin sikit (macam pegang controller) */
-    width: 100%; 
-    padding: 0 6% 8% 6%; /* Jarak 6% dari tepi, 8% dari bawah */
-    position: relative;
+.brand { display: flex; align-items: baseline; gap: var(--space-2); }
+.brand-name {
+    font-weight: 600;
+    font-size: 17px;
+    letter-spacing: -0.02em;
+    color: var(--text-primary);
+}
+.brand-version {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-tertiary);
+    font-feature-settings: "tnum";
+    letter-spacing: 0;
 }
 
-/* Joystick & D-Pad Zone */
-.left-thumb-zone {
-    width: 240px; height: 240px; 
+.connection { display: flex; align-items: center; gap: var(--space-3); }
+
+.status-pill {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: 6px 12px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r-full);
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    box-shadow: var(--shadow-sm);
+    transition: all var(--t-mid) var(--ease-out);
+}
+
+.status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: var(--r-full);
+    background: var(--text-tertiary);
+    transition: background var(--t-mid) var(--ease-out);
+    box-shadow: 0 0 0 0 transparent;
+}
+
+body.is-connected .status-dot {
+    background: var(--success);
+    animation: pulse-dot 2s var(--ease-out) infinite;
+}
+body.is-connected .status-text { color: var(--text-primary); }
+
+@keyframes pulse-dot {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(48, 209, 88, 0.4); }
+    50% { box-shadow: 0 0 0 6px rgba(48, 209, 88, 0); }
+}
+
+/* Primary connect button */
+.btn-primary {
+    height: 32px;
+    padding: 0 16px;
+    background: var(--accent);
+    color: white;
+    font-size: 13px;
+    font-weight: 600;
+    border-radius: var(--r-full);
+    transition: all var(--t-fast) var(--ease-out);
+    letter-spacing: -0.01em;
+    box-shadow: var(--shadow-sm);
+}
+.btn-primary:hover { background: var(--accent-hover); }
+.btn-primary:active { transform: scale(0.96); }
+
+body.is-connected .btn-primary {
+    background: var(--surface);
+    color: var(--text-primary);
+    border: 1px solid var(--border-strong);
+}
+
+/* ---------- 4. TELEMETRY DISPLAY ---------- */
+.telemetry {
+    position: absolute;
+    top: 64px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 6px 14px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r-full);
+    box-shadow: var(--shadow-sm);
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-size: 11px;
+    font-feature-settings: "tnum";
+    z-index: 5;
+    transition: all var(--t-mid) var(--ease-out);
+    white-space: nowrap;
+    padding-top: max(6px, calc(env(safe-area-inset-top) * 0.4 + 6px));
+}
+
+.telemetry-label {
+    color: var(--text-tertiary);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    font-size: 10px;
+}
+.telemetry-value {
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+body.is-connected .telemetry-value { color: var(--accent); }
+
+/* ---------- 5. CONTROL AREA ---------- */
+.control-area {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+    padding: 0 var(--space-6);
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+}
+
+.left-zone, .right-zone {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     position: relative;
-    display: flex; justify-content: center; align-items: center;
+}
+.right-zone { gap: var(--space-5); padding-right: var(--space-3); }
+
+/* ---------- 6. JOYSTICK ---------- */
+.joystick {
+    width: 200px;
+    height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    touch-action: none;
 }
 
 .joystick-base {
-    width: 190px; height: 190px; 
-    background: radial-gradient(circle, #25252b 0%, #0f0f12 100%);
-    border: 3px solid rgba(255, 255, 255, 0.03); border-radius: 50%;
-    position: relative; box-shadow: 0 15px 35px rgba(0,0,0,0.7);
+    width: 160px;
+    height: 160px;
+    border-radius: 50%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    box-shadow:
+        var(--shadow-md),
+        var(--shadow-inset);
+    position: relative;
+    transition: all var(--t-mid) var(--ease-out);
 }
 
-.thumbstick {
-    width: 80px; height: 80px; 
-    background: linear-gradient(135deg, #444 0%, #151515 100%);
-    border: 2px solid #333; border-radius: 50%; 
-    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-    box-shadow: 0 8px 15px rgba(0,0,0,0.5), inset 0 2px 5px rgba(255,255,255,0.1);
+/* Inner ring guide */
+.joystick-base::before {
+    content: '';
+    position: absolute;
+    inset: 12px;
+    border-radius: 50%;
+    border: 1px dashed var(--border);
+    opacity: 0.6;
+    transition: all var(--t-mid) var(--ease-out);
 }
 
-.joystick-base.active .thumbstick { background: var(--accent); border-color: #ff6b84; }
+.joystick-base.active {
+    border-color: var(--accent);
+    box-shadow:
+        0 0 0 4px var(--accent-soft),
+        var(--shadow-md);
+}
+.joystick-base.active::before { opacity: 0; }
 
-/* D-Pad Buttons */
-.dpad-zone { width: 190px; height: 190px; position: absolute; display: none; }
+.joystick-base.max-throttle {
+    box-shadow:
+        0 0 0 4px var(--accent-soft),
+        0 0 0 8px rgba(0, 113, 227, 0.04),
+        var(--shadow-md);
+}
+
+.joystick-thumb {
+    position: absolute;
+    top: 50%; left: 50%;
+    width: 64px; height: 64px;
+    border-radius: 50%;
+    background: linear-gradient(180deg, var(--surface-elevated) 0%, var(--surface) 100%);
+    border: 1px solid var(--border-strong);
+    box-shadow:
+        var(--shadow-md),
+        inset 0 1px 0 rgba(255, 255, 255, 0.5);
+    transform: translate(-50%, -50%);
+    transition: transform 60ms linear, box-shadow var(--t-mid) var(--ease-out);
+    pointer-events: none;
+}
+.joystick-base.active .joystick-thumb {
+    box-shadow:
+        var(--shadow-lg),
+        inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+/* ---------- 7. D-PAD ---------- */
+.dpad {
+    display: none;
+    position: relative;
+    width: 200px;
+    height: 200px;
+}
+
 .dpad-btn {
-    position: absolute; width: 65px; height: 65px; border-radius: 8px;
-    background: #1c1c20; color: #777; display: flex; justify-content: center; align-items: center;
-    font-size: 1.4rem; border: 1px solid #333;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+    position: absolute;
+    width: 64px;
+    height: 64px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r-md);
+    box-shadow: var(--shadow-sm);
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--t-fast) var(--ease-out);
+    touch-action: none;
 }
-.dpad-up { top: 0; left: 50%; transform: translateX(-50%); border-radius: 8px 8px 2px 2px; }
-.dpad-down { bottom: 0; left: 50%; transform: translateX(-50%); border-radius: 2px 2px 8px 8px; }
-.dpad-left { left: 0; top: 50%; transform: translateY(-50%); border-radius: 8px 2px 2px 8px; }
-.dpad-right { right: 0; top: 50%; transform: translateY(-50%); border-radius: 2px 8px 8px 2px; }
-.dpad-btn.active-toggle { background: var(--accent); color: white; border-color: transparent; }
+.dpad-btn svg { width: 24px; height: 24px; }
 
-/* Action Buttons (Right Side) */
-.action-column { 
-    display: flex; 
-    flex-direction: column; 
-    gap: 25px; 
-    margin-bottom: 20px; /* Tingkatkan sikit kedudukan butang */
+.dpad-up    { top: 0; left: 50%; transform: translateX(-50%); }
+.dpad-right { right: 0; top: 50%; transform: translateY(-50%); }
+.dpad-down  { bottom: 0; left: 50%; transform: translateX(-50%); }
+.dpad-left  { left: 0; top: 50%; transform: translateY(-50%); }
+
+.dpad-btn.active-toggle {
+    background: var(--accent);
+    color: white;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 4px var(--accent-soft), var(--shadow-md);
 }
+.dpad-up.active-toggle    { transform: translateX(-50%) scale(0.94); }
+.dpad-right.active-toggle { transform: translateY(-50%) scale(0.94); }
+.dpad-down.active-toggle  { transform: translateX(-50%) scale(0.94); }
+.dpad-left.active-toggle  { transform: translateY(-50%) scale(0.94); }
 
+/* ---------- 8. ACTION BUTTONS (A / B) ---------- */
 .btn-action {
-    width: 95px; height: 95px; border-radius: 50%; 
-    background: #1c1c20;
-    color: #f3f4f6; font-size: 1.8rem; font-weight: 700;
-    display: flex; justify-content: center; align-items: center;
-    border: 1px solid #333; 
-    box-shadow: 0 8px 20px rgba(0,0,0,0.6), inset 0 2px 5px rgba(255,255,255,0.05);
-    text-shadow: 0 2px 4px rgba(0,0,0,0.5);
-}
-.btn-action.active-toggle { 
-    background: var(--accent); 
-    color: white; 
-    transform: scale(0.9) translateY(5px); 
-    box-shadow: 0 2px 5px rgba(0,0,0,0.8);
-}
-
-/* Floating Tools */
-.bottom-right-cluster { 
-    position: fixed; 
-    bottom: 20px; 
-    left: 50%; 
-    transform: translateX(-50%); /* Letak di bawah tengah supaya tak ganggu jari */
-    display: flex; 
-    gap: 15px; 
+    width: 88px;
+    height: 88px;
+    border-radius: 50%;
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: white;
+    box-shadow:
+        var(--shadow-md),
+        inset 0 -2px 0 rgba(0, 0, 0, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    transition: all var(--t-fast) var(--ease-out);
+    touch-action: none;
+    position: relative;
 }
 
-.btn-icon {
-    width: 40px; height: 40px; border-radius: 50%; 
-    background: rgba(30, 30, 35, 0.6);
-    color: #999; border: 1px solid #444; 
-    display: flex; justify-content: center; align-items: center;
-    backdrop-filter: blur(5px);
+.btn-a {
+    background: linear-gradient(180deg, #4ade80 0%, var(--btn-a-bg) 100%);
+    transform: translateY(20px);
+}
+.btn-b {
+    background: linear-gradient(180deg, #ff6961 0%, var(--btn-b-bg) 100%);
+    transform: translateY(-20px);
 }
 
-/* --- RESPONSIVE ADJUSTMENTS --- */
-@media (max-width: 700px) {
-    .control-grid { padding: 0 4% 10% 4%; }
-    .left-thumb-zone { width: 180px; height: 180px; }
-    .joystick-base, .dpad-zone { width: 160px; height: 160px; }
-    .btn-action { width: 80px; height: 80px; }
+.btn-action.active-toggle {
+    transform: translateY(0) scale(0.92);
+    box-shadow:
+        var(--shadow-sm),
+        inset 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+.btn-a.active-toggle { transform: translateY(20px) scale(0.92); }
+.btn-b.active-toggle { transform: translateY(-20px) scale(0.92); }
+
+/* ---------- 9. UTILITY CLUSTER (Bottom-right corner) ---------- */
+.util-cluster {
+    position: absolute;
+    bottom: var(--space-4);
+    right: var(--space-4);
+    bottom: max(var(--space-4), env(safe-area-inset-bottom));
+    display: flex;
+    gap: var(--space-2);
+    z-index: 10;
+}
+
+.btn-util {
+    width: 40px;
+    height: 40px;
+    border-radius: var(--r-full);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+    box-shadow: var(--shadow-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--t-fast) var(--ease-out);
+}
+.btn-util:hover { color: var(--text-primary); }
+.btn-util:active { transform: scale(0.92); }
+.btn-util svg { width: 18px; height: 18px; }
+
+/* ---------- 10. TOAST ---------- */
+.toast {
+    position: absolute;
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    max-width: 80%;
+    padding: 10px 16px;
+    background: var(--text-primary);
+    color: var(--bg);
+    border-radius: var(--r-full);
+    font-size: 13px;
+    font-weight: 500;
+    box-shadow: var(--shadow-lg);
+    opacity: 0;
+    pointer-events: none;
+    transition: all var(--t-mid) var(--ease-out);
+    z-index: 100;
+    white-space: nowrap;
+}
+.toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+/* ---------- 11. PORTRAIT WARNING ---------- */
+@media (orientation: portrait) {
+    .control-area::after {
+        content: 'Rotate device to landscape';
+        position: absolute;
+        inset: 0;
+        background: var(--bg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 15px;
+        font-weight: 500;
+        color: var(--text-secondary);
+        z-index: 50;
+        letter-spacing: -0.01em;
+    }
+}
+
+/* ---------- 12. MICRO-INTERACTIONS ---------- */
+@media (hover: hover) {
+    .dpad-btn:hover { color: var(--text-primary); }
+    .btn-action:hover { filter: brightness(1.05); }
+}
+
+/* Reduced motion respect */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+    }
 }
