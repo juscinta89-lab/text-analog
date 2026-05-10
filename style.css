@@ -582,6 +582,21 @@ body.is-connected .telemetry-mode .tel-value { color: var(--warning); }
     max-width: 140px;
     flex-shrink: 1;
     min-width: 0;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    font-family: inherit;
+}
+
+.status-pill:hover {
+    background: var(--bg);
+}
+
+.status-pill:active {
+    transform: scale(0.96);
+}
+
+body.is-connected .status-pill {
+    cursor: pointer;
 }
 
 .status-text {
@@ -589,6 +604,166 @@ body.is-connected .telemetry-mode .tel-value { color: var(--warning); }
     text-overflow: ellipsis;
     white-space: nowrap;
     min-width: 0;
+}
+
+/* ---------- 7b. MENU SAMBUNGAN ---------- */
+.connection-menu {
+    position: absolute;
+    top: calc(var(--dash-height) + 8px);
+    right: var(--space-4);
+    width: min(320px, calc(100vw - var(--space-4) * 2));
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r-lg);
+    box-shadow: var(--shadow-lg);
+    z-index: 60;
+    overflow: hidden;
+    transform-origin: top right;
+    animation: cm-enter var(--t-mid) var(--ease-spring);
+}
+
+.connection-menu[hidden] { display: none; }
+
+@keyframes cm-enter {
+    0% {
+        opacity: 0;
+        transform: scale(0.92) translateY(-8px);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.cm-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface-2);
+}
+
+.cm-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+    letter-spacing: -0.01em;
+}
+
+.cm-close {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--border);
+    color: var(--text-secondary);
+    font-size: 16px;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--t-fast) var(--ease-out);
+    border: none;
+    cursor: pointer;
+}
+.cm-close:hover {
+    background: var(--border-strong);
+    color: var(--text-primary);
+}
+
+.cm-body {
+    padding: 8px;
+}
+
+.cm-current {
+    padding: 12px 14px;
+    margin-bottom: 4px;
+    background: var(--success-soft);
+    border-radius: var(--r-md);
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+body:not(.is-connected) .cm-current { display: none; }
+
+.cm-current-label {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-tertiary);
+}
+
+.cm-current-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+    letter-spacing: -0.01em;
+}
+
+.cm-action {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    background: transparent;
+    border: none;
+    border-radius: var(--r-md);
+    cursor: pointer;
+    transition: all var(--t-fast) var(--ease-out);
+    text-align: left;
+    color: var(--text-primary);
+    font-family: inherit;
+}
+
+.cm-action:hover {
+    background: var(--bg);
+}
+
+.cm-action:active {
+    transform: scale(0.98);
+}
+
+.cm-action svg {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+    color: var(--text-secondary);
+}
+
+.cm-action-switch svg {
+    color: var(--accent);
+}
+
+.cm-action-disconnect svg {
+    color: var(--danger);
+}
+
+.cm-action-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.cm-action-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+    letter-spacing: -0.01em;
+}
+
+.cm-action-desc {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-tertiary);
+}
+
+body:not(.is-connected) .cm-action-switch,
+body:not(.is-connected) .cm-action-disconnect {
+    display: none;
 }
 
 .status-dot {
@@ -625,6 +800,8 @@ body.is-connected .status-text { color: var(--text-primary); }
     box-shadow: var(--shadow-sm);
     flex-shrink: 0;
     white-space: nowrap;
+    min-width: 88px;
+    text-align: center;
 }
 .btn-primary:hover { background: var(--accent-hover); }
 .btn-primary:active { transform: scale(0.96); }
