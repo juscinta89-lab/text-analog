@@ -109,6 +109,16 @@
     <!-- ============ TOAST (Error Messages) ============ -->
     <div class="toast" id="toast" role="alert" aria-live="polite"></div>
 
+    <!-- ============ DEBUG PANEL (Triple-tap brand untuk toggle) ============ -->
+    <div class="debug-panel" id="debugPanel" hidden>
+        <div class="debug-header">
+            <span class="debug-title">DEBUG LOG</span>
+            <button class="debug-clear" id="debugClear">Clear</button>
+            <button class="debug-close" id="debugClose">×</button>
+        </div>
+        <div class="debug-content" id="debugContent"></div>
+    </div>
+
     <script src="app.js"></script>
 </body>
 </html>
