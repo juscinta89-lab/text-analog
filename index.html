@@ -25,14 +25,33 @@
                 <span class="status-dot"></span>
                 <span class="status-text" id="status">Offline</span>
             </div>
+            <button class="btn-reconnect" id="btnReconnect" hidden aria-label="Reconnect to last device"></button>
             <button class="btn-primary" id="btnConnect">Connect</button>
         </div>
     </header>
 
     <!-- ============ TELEMETRY DISPLAY ============ -->
-    <div class="telemetry" id="telemetryOut">
-        <span class="telemetry-label">Output</span>
-        <span class="telemetry-value">awaiting</span>
+    <!--
+        Telemetry sekarang ada DUA bahagian:
+        1. Output kita (apa yang dihantar) — kekal seperti dahulu
+        2. Inbound (apa yang diterima dari micro:bit) — baru, untuk bidirectional
+    -->
+    <div class="telemetry-cluster">
+        <div class="telemetry telemetry-out" id="telemetryOut">
+            <span class="telemetry-label">TX</span>
+            <span class="telemetry-value">awaiting</span>
+        </div>
+        <div class="telemetry telemetry-in" id="telemetryIn" hidden>
+            <span class="telemetry-label">RX</span>
+            <span class="telemetry-value">—</span>
+        </div>
+        <div class="telemetry telemetry-battery" id="batteryIndicator" hidden>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14">
+                <rect x="2" y="7" width="16" height="10" rx="2"/>
+                <line x1="22" y1="11" x2="22" y2="13"/>
+            </svg>
+            <span class="telemetry-value" id="batteryValue">—</span>
+        </div>
     </div>
 
     <!-- ============ MAIN CONTROL AREA ============ -->
