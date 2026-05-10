@@ -35,6 +35,61 @@ function toast(msg, duration = 2400) {
 }
 
 
+// ===== §2b. DEBUG PANEL =====
+// Panel debug yang menunjukkan setiap mesej yang dihantar dan diterima.
+// Toggle dengan ketuk label brand 3 kali (triple-tap).
+const debugPanel = document.getElementById('debugPanel');
+const debugContent = document.getElementById('debugContent');
+const MAX_DEBUG_LINES = 100;
+
+function debugLog(tag, message) {
+    if (!debugContent) return;
+    const now = new Date();
+    const time = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
+    const line = document.createElement('div');
+    line.className = 'debug-line';
+    const tagClass = tag === 'RX' ? 'debug-tag-rx' : tag === 'TX' ? 'debug-tag-tx' : 'debug-tag-info';
+    line.innerHTML = `<span class="debug-time">${time}</span><span class="debug-tag ${tagClass}">${tag}</span>${escapeHtml(message)}`;
+    debugContent.appendChild(line);
+    while (debugContent.children.length > MAX_DEBUG_LINES) {
+        debugContent.removeChild(debugContent.firstChild);
+    }
+    debugContent.scrollTop = debugContent.scrollHeight;
+}
+
+function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+// Triple-tap pada brand untuk toggle panel
+const brandEl = document.querySelector('.brand');
+let tapCount = 0;
+let tapTimer = null;
+if (brandEl) {
+    brandEl.addEventListener('click', () => {
+        tapCount++;
+        clearTimeout(tapTimer);
+        tapTimer = setTimeout(() => { tapCount = 0; }, 600);
+        if (tapCount >= 3) {
+            tapCount = 0;
+            debugPanel.hidden = !debugPanel.hidden;
+            if (!debugPanel.hidden) {
+                debugLog('INFO', 'Debug panel opened');
+                toast('Debug ON');
+            }
+        }
+    });
+}
+
+document.getElementById('debugClear')?.addEventListener('click', () => {
+    debugContent.innerHTML = '';
+    debugLog('INFO', 'Log cleared');
+});
+document.getElementById('debugClose')?.addEventListener('click', () => {
+    debugPanel.hidden = true;
+});
+
+
 // ===== §3. MODE TOGGLE =====
 let isDpadMode = false;
 const btnToggle = document.getElementById('btnToggleMode');
@@ -192,8 +247,10 @@ async function connectToDevice(device) {
         txChar = await service.getCharacteristic(UART_TX_CHAR_UUID);
         txChar.addEventListener('characteristicvaluechanged', handleIncomingData);
         await txChar.startNotifications();
+        debugLog('INFO', 'TX channel ready — listening for data');
     } catch (err) {
         console.warn('TX channel not available:', err);
+        debugLog('INFO', 'TX channel FAILED: ' + err.message);
         txChar = null;
     }
 
@@ -297,33 +354,33 @@ function handleIncomingData(event) {
     const chunk = new TextDecoder().decode(event.target.value);
     rxBuffer += chunk;
 
-    // Pecahkan ikut newline (data boleh tiba sebagai chunks)
     let lines = rxBuffer.split('\n');
-    rxBuffer = lines.pop(); // simpan baki yang belum lengkap
+    rxBuffer = lines.pop();
 
     for (const line of lines) {
         const trimmed = line.trim();
-        if (trimmed) parseRxLine(trimmed);
+        if (trimmed) {
+            debugLog('RX', trimmed);
+            parseRxLine(trimmed);
+        }
     }
 }
 
 function parseRxLine(line) {
-    // Cuba parse "key:value" format
     const colonIdx = line.indexOf(':');
     if (colonIdx > 0) {
         const key = line.slice(0, colonIdx).trim().toLowerCase();
         const value = line.slice(colonIdx + 1).trim();
 
         if (key === 'battery' || key === 'bat') {
-            setBatteryLevel(parseFloat(value));
+            const num = parseFloat(value);
+            debugLog('INFO', `Battery parsed: ${num}%`);
+            setBatteryLevel(num);
             return;
         }
-        // Lain-lain key → display dalam RX pill
         setRxTelemetry(`${key}:${value}`);
         return;
     }
-
-    // Bukan key:value → display sebagai-adanya
     setRxTelemetry(line);
 }
 
